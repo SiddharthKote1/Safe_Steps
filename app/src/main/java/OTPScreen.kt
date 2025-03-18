@@ -2,7 +2,6 @@ package com.example.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,10 +10,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.draw.clip
+import androidx.navigation.NavController
 
 @Composable
-fun OTPScreen(onVerifyClick: (String) -> Unit) {
+fun OTPScreen(onVerifyClick: (String) -> Unit,
+              navController: NavController) {
     var otpValues by remember { mutableStateOf(List(6) { "" }) }
 
     Column(
@@ -34,7 +34,7 @@ fun OTPScreen(onVerifyClick: (String) -> Unit) {
             otpValues.forEachIndexed { index, value ->
                 Box(
                     modifier = Modifier
-                        .size(55.dp)
+                        .size(40.dp)
                         //.clip(RoundedCornerShape(8.dp))
                         .background(Color.White),
                     contentAlignment = Alignment.Center
@@ -69,10 +69,6 @@ fun OTPScreen(onVerifyClick: (String) -> Unit) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OTPScreenPreview() {
-    OTPScreen { otp -> println("Entered OTP: $otp") }
-}
+
 
 

@@ -24,15 +24,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun PhoneScreen(){
+fun PhoneScreen(navController: NavController){
     var country by remember {mutableStateOf("")}
     var phoneNumber by remember {mutableStateOf("")}
     Column(modifier=Modifier.fillMaxSize(),
@@ -88,7 +91,9 @@ fun PhoneScreen(){
             )
         }
         Spacer(modifier=Modifier.padding(10.dp))
-        Button(onClick={},
+        Button(onClick={
+             navController.navigate("OTP")
+        },
             shape= RoundedCornerShape(10.dp),
             colors= ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF0073E6),
@@ -103,5 +108,5 @@ fun PhoneScreen(){
 @Composable
 @Preview(showBackground = true)
 fun PhoneScreenPreview(){
-    PhoneScreen()
+    PhoneScreen(navController = NavController(context = LocalContext.current))
 }
