@@ -20,7 +20,6 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavGraph(modifier = Modifier.padding(innerPadding))
                 }
-
             }
         }
     }

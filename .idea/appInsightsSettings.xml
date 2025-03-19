@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.chat" />
-                  <option name="mobileSdkAppId" value="1:918876825992:android:7d670cb664161bbfedf23d" />
-                  <option name="projectId" value="chat-pie-731d0" />
-                  <option name="projectNumber" value="918876825992" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
