@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
@@ -19,10 +20,11 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
 fun OTPScreen(
-    onVerifyClick: (String) -> Unit,
+    onVerifyClick: @Composable (String) -> Unit,
     navController: NavController
 ) {
-    var otpValues by remember { mutableStateOf(List(6) { "" }) }
+    val context = LocalContext.current
+    var otp by remember { mutableStateOf("") }
     val focusRequesters = remember { List(6) { FocusRequester() } }
     val focusManager = LocalFocusManager.current
 
@@ -46,27 +48,16 @@ fun OTPScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            otpValues.forEachIndexed { index, text ->
+            repeat(6) { index ->
                 OutlinedTextField(
-                    value = text,
+                    value = otp.getOrNull(index)?.toString() ?: "",
                     onValueChange = { newValue ->
                         if (newValue.length == 1 && newValue.all { it.isDigit() }) {
-                            val newOtpValues = otpValues.toMutableList()
-                            newOtpValues[index] = newValue
-                            otpValues = newOtpValues
-
-                            // Move to next field if not the last one
-                            if (index < otpValues.lastIndex) {
-                                focusRequesters[index + 1].requestFocus()
-                            }
+                            otp = otp.take(index) + newValue + otp.drop(index + 1)
+                            if (index < 5) focusRequesters[index + 1].requestFocus()
                         } else if (newValue.isEmpty()) {
-                            val newOtpValues = otpValues.toMutableList()
-                            newOtpValues[index] = ""
-                            otpValues = newOtpValues
-
-                            if (index > 0) {
-                                focusRequesters[index - 1].requestFocus()
-                            }
+                            otp = otp.take(index) + "" + otp.drop(index + 1)
+                            if (index > 0) focusRequesters[index - 1].requestFocus()
                         }
                     },
                     modifier = Modifier
@@ -82,13 +73,12 @@ fun OTPScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
         Button(
-            onClick = { onVerifyClick(otpValues.joinToString("")) },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0073E6)),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(text = "Verify", fontSize = 16.sp)
+            onClick = {
+                verifyPhoneNumberWithCode(context, storedVerificationId, otp, navController)
+            },
+            shape=RoundedCornerShape(10.dp)) {
+            Text("Verify OTP")
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(

@@ -1,11 +1,13 @@
 package com.example.chat
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,10 +36,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
+
 @Composable
 fun PhoneScreen(navController: NavController){
     var country by remember {mutableStateOf("")}
     var phoneNumber by remember {mutableStateOf("")}
+    val context=LocalContext.current
+
+
     Column(modifier=Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top){
@@ -91,19 +97,19 @@ fun PhoneScreen(navController: NavController){
             )
         }
         Spacer(modifier=Modifier.padding(10.dp))
-        Button(onClick={
-             navController.navigate("OTP")
+        Button(onClick = {
+            navController.navigate("OTP")
+            onLoginClicked(context, navController, country, phoneNumber) {
+
+            }
         },
-            shape= RoundedCornerShape(10.dp),
-            colors= ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF0073E6),
-                contentColor = Color.Black
-            )
-            ) {
-            Text("Send OTP")
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Generate OTP")
         }
     }
 }
+
 
 @Composable
 @Preview(showBackground = true)
