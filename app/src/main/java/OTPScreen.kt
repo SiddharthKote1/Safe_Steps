@@ -20,7 +20,8 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
 fun OTPScreen(
-    onVerifyClick: @Composable (String) -> Unit,
+    onVerifyClick: (String) -> Unit,
+    onResendClick: () -> Unit,
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -76,13 +77,19 @@ fun OTPScreen(
         Button(
             onClick = {
                 verifyPhoneNumberWithCode(context, storedVerificationId, otp, navController)
+                navController.navigate("MainScreen")
             },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF0073E6)
+            ),
             shape=RoundedCornerShape(10.dp)) {
             Text("Verify OTP")
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
-            onClick = {},
+            onClick = {
+                resendOTP(context, navController, storedCountryCode, storedPhoneNumber)
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF0073E6)
             ),
