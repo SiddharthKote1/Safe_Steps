@@ -1,6 +1,7 @@
 package com.example.chat
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,7 +39,8 @@ fun MainScreen(navController: NavController) {
         user?.phoneNumber?.let { phone ->
             Text(
                 text = "Logged in as: $phone",
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                color = Color.Gray
             )
         }
 
@@ -54,7 +56,8 @@ fun MainScreen(navController: NavController) {
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFE60000)
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
         ) {
             Text("Logout")
         }

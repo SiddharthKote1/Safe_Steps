@@ -14,6 +14,12 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
 
+// Firebase authentication state
+var storedVerificationId: String = ""
+var storedResendToken: PhoneAuthProvider.ForceResendingToken? = null
+var storedCountryCode: String = ""
+var storedPhoneNumber: String = ""
+
 @Composable
 fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
@@ -36,16 +42,11 @@ fun NavGraph(modifier: Modifier = Modifier) {
     }
 }
 
-// Firebase authentication state
-var storedVerificationId = ""
-var storedResendToken: PhoneAuthProvider.ForceResendingToken? = null
-var storedCountryCode = ""
-var storedPhoneNumber = ""
-
 fun signInWithPhoneAuthCredential(
     context: Context,
     credential: PhoneAuthCredential,
-    navController: NavController
+    navController: NavController,
+    onComplete: (Boolean) -> Unit = {}
 ) {
     FirebaseAuth.getInstance().signInWithCredential(credential)
         .addOnCompleteListener(context as Activity) { task ->
@@ -54,12 +55,11 @@ fun signInWithPhoneAuthCredential(
                 navController.navigate(Routes.MAIN_SCREEN) {
                     popUpTo(Routes.PHONE_SCREEN) { inclusive = true }
                 }
+                onComplete(true)
             } else {
-                if (task.exception is FirebaseAuthInvalidCredentialsException) {
-                    Toast.makeText(context, "Invalid OTP", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "Authentication failed", Toast.LENGTH_SHORT).show()
-                }
+                val error = task.exception?.message ?: "Authentication failed"
+                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                onComplete(false)
             }
         }
 }
@@ -101,60 +101,80 @@ fun onLoginClicked(
         }
     }
 
-    val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
-        .setPhoneNumber(fullPhoneNumber)
-        .setTimeout(60L, TimeUnit.SECONDS)
-        .setActivity(context as Activity)
-        .setCallbacks(callbacks)
-        .build()
+    try {
+        val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
+            .setPhoneNumber(fullPhoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(context as Activity)
+            .setCallbacks(callbacks)
+            .build()
 
-    PhoneAuthProvider.verifyPhoneNumber(options)
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    } catch (e: Exception) {
+        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        onCodeSend()
+    }
 }
 
 fun verifyPhoneNumberWithCode(
     context: Context,
     verificationId: String,
     code: String,
-    navController: NavController
+    navController: NavController,
+    onComplete: (Boolean) -> Unit = {}
 ) {
-    val credential = PhoneAuthProvider.getCredential(verificationId, code)
-    signInWithPhoneAuthCredential(context, credential, navController)
+    try {
+        val credential = PhoneAuthProvider.getCredential(verificationId, code)
+        signInWithPhoneAuthCredential(context, credential, navController, onComplete)
+    } catch (e: Exception) {
+        Toast.makeText(context, "Invalid OTP format", Toast.LENGTH_SHORT).show()
+        onComplete(false)
+    }
 }
 
 fun resendOTP(
     context: Context,
     navController: NavController,
     countryCode: String,
-    phoneNumber: String
+    phoneNumber: String,
+    onComplete: (Boolean) -> Unit = {}
 ) {
     storedResendToken?.let { token ->
-        val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
-            .setPhoneNumber("+$countryCode$phoneNumber")
-            .setTimeout(60L, TimeUnit.SECONDS)
-            .setActivity(context as Activity)
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                    signInWithPhoneAuthCredential(context, credential, navController)
-                }
+        try {
+            val options = PhoneAuthOptions.newBuilder(FirebaseAuth.getInstance())
+                .setPhoneNumber("+$countryCode$phoneNumber")
+                .setTimeout(60L, TimeUnit.SECONDS)
+                .setActivity(context as Activity)
+                .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                        signInWithPhoneAuthCredential(context, credential, navController)
+                    }
 
-                override fun onVerificationFailed(e: FirebaseException) {
-                    Toast.makeText(context, "Resend failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                    override fun onVerificationFailed(e: FirebaseException) {
+                        Toast.makeText(context, "Resend failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        onComplete(false)
+                    }
 
-                override fun onCodeSent(
-                    verificationId: String,
-                    token: PhoneAuthProvider.ForceResendingToken
-                ) {
-                    storedVerificationId = verificationId
-                    storedResendToken = token
-                    Toast.makeText(context, "OTP resent successfully", Toast.LENGTH_SHORT).show()
-                }
-            })
-            .setForceResendingToken(token)
-            .build()
+                    override fun onCodeSent(
+                        verificationId: String,
+                        token: PhoneAuthProvider.ForceResendingToken
+                    ) {
+                        storedVerificationId = verificationId
+                        storedResendToken = token
+                        Toast.makeText(context, "OTP resent successfully", Toast.LENGTH_SHORT).show()
+                        onComplete(true)
+                    }
+                })
+                .setForceResendingToken(token)
+                .build()
 
-        PhoneAuthProvider.verifyPhoneNumber(options)
+            PhoneAuthProvider.verifyPhoneNumber(options)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            onComplete(false)
+        }
     } ?: run {
         Toast.makeText(context, "Request new OTP first", Toast.LENGTH_SHORT).show()
+        onComplete(false)
     }
 }

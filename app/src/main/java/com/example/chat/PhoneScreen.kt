@@ -22,7 +22,7 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun PhoneScreen(navController: NavController) {
-    var countryCode by remember { mutableStateOf("91") } // Default to India
+    var countryCode by remember { mutableStateOf("91") }
     var phoneNumber by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -36,7 +36,7 @@ fun PhoneScreen(navController: NavController) {
     ) {
         Spacer(modifier = Modifier.height(50.dp))
         Image(
-            painter = painterResource(id = R.drawable.chatpi),
+            painter = painterResource(id = R.drawable.wooo),
             contentDescription = "App Logo"
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -85,7 +85,7 @@ fun PhoneScreen(navController: NavController) {
         Button(
             onClick = {
                 if (phoneNumber.length < 10) {
-                    Toast.makeText(context, "Please enter a valid phone number", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please enter a valid 10-digit phone number", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
                 isLoading = true
@@ -101,7 +101,8 @@ fun PhoneScreen(navController: NavController) {
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF0073E6)
             ),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White)

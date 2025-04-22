@@ -1,9 +1,10 @@
 package com.example.chat
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,16 +23,16 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun OTPScreen(navController: NavController) {
-    var otp by remember { mutableStateOf("") }
-    val focusRequesters = remember { List(6) { FocusRequester() } }
-    var isLoading by remember { mutableStateOf(false) }
-    var canResend by remember { mutableStateOf(false) }
-    var timeLeft by remember { mutableStateOf(30) }
     val context = LocalContext.current
-
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
 
-    LaunchedEffect(key1 = canResend) {
+    val otpDigits = remember { mutableStateListOf("", "", "", "", "", "") }
+    val focusRequesters = remember { List(6) { FocusRequester() } }
+    var timeLeft by remember { mutableStateOf(60) }
+    var canResend by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(canResend) {
         if (!canResend) {
             while (timeLeft > 0) {
                 delay(1000)
@@ -45,41 +46,40 @@ fun OTPScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
         LottieAnimation(
-            composition = composition,
+            composition,
+            iterations = LottieConstants.IterateForever,
             modifier = Modifier.size(200.dp)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        Text(text = "Enter OTP", fontSize = 24.sp)
         Text(
-            text = "Enter OTP",
-            fontSize = 24.sp
+            text = "Sent to +$storedCountryCode$storedPhoneNumber",
+            fontSize = 14.sp,
+            color = Color.Gray
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            repeat(6) { index ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            otpDigits.forEachIndexed { index, digit ->
                 OutlinedTextField(
-                    value = otp.getOrNull(index)?.toString() ?: "",
+                    value = digit,
                     onValueChange = { newValue ->
-                        if (newValue.length == 1 && newValue.all { it.isDigit() }) {
-                            otp = otp.take(index) + newValue + otp.drop(index + 1)
-                            if (index < 5) focusRequesters[index + 1].requestFocus()
-                            else {
-                                verifyPhoneNumberWithCode(context, storedVerificationId, otp, navController)
+                        if (newValue.length <= 1 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
+                            otpDigits[index] = newValue
+
+                            if (newValue.isNotEmpty() && index < 5) {
+                                focusRequesters[index + 1].requestFocus()
+                            } else if (newValue.isEmpty() && index > 0) {
+                                focusRequesters[index - 1].requestFocus()
                             }
-                        } else if (newValue.isEmpty()) {
-                            otp = otp.take(index) + otp.drop(index + 1)
-                            if (index > 0) focusRequesters[index - 1].requestFocus()
                         }
                     },
                     modifier = Modifier
@@ -97,21 +97,33 @@ fun OTPScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        val otp = otpDigits.joinToString("")
         Button(
             onClick = {
                 if (otp.length == 6) {
-                    verifyPhoneNumberWithCode(context, storedVerificationId, otp, navController)
+                    isLoading = true
+                    verifyPhoneNumberWithCode(
+                        context = context,
+                        verificationId = storedVerificationId,
+                        code = otp,
+                        navController = navController,
+                        onComplete = { success ->
+                            isLoading = !success
+                        }
+                    )
                 } else {
                     Toast.makeText(context, "Please enter 6-digit OTP", Toast.LENGTH_SHORT).show()
                 }
             },
             enabled = otp.length == 6 && !isLoading,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF0073E6)
-            ),
-            shape = RoundedCornerShape(10.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0073E6)),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-                Text("Verify")
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else {
+                Text("Verify OTP")
             }
         }
 
@@ -120,9 +132,20 @@ fun OTPScreen(navController: NavController) {
         TextButton(
             onClick = {
                 if (canResend) {
-                    resendOTP(context, navController, storedCountryCode, storedPhoneNumber)
-                    timeLeft = 60
-                    canResend = false
+                    resendOTP(
+                        context = context,
+                        navController = navController,
+                        countryCode = storedCountryCode,
+                        phoneNumber = storedPhoneNumber,
+                        onComplete = { success ->
+                            if (success) {
+                                timeLeft = 60
+                                canResend = false
+                                otpDigits.replaceAll { "" }
+                                focusRequesters[0].requestFocus()
+                            }
+                        }
+                    )
                 }
             },
             enabled = canResend
@@ -134,4 +157,8 @@ fun OTPScreen(navController: NavController) {
         }
     }
 
-
+    LaunchedEffect(Unit) {
+        delay(300)
+        focusRequesters[0].requestFocus()
+    }
+}
