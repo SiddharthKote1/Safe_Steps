@@ -12,10 +12,16 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.chat.ui.theme.ChatΠTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
-        installSplashScreen()
         enableEdgeToEdge()
+
+        splashScreen.setKeepOnScreenCondition {
+            false
+        }
 
         setContent {
             ChatΠTheme {
@@ -29,4 +35,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

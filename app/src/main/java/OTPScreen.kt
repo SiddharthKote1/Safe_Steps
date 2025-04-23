@@ -15,9 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 
@@ -52,8 +54,7 @@ fun OTPScreen(navController: NavController) {
 
         LottieAnimation(
             composition,
-            iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.size(350.dp)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -117,17 +118,12 @@ fun OTPScreen(navController: NavController) {
             },
             enabled = otp.length == 6 && !isLoading,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0073E6)),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier.fillMaxWidth()
+            shape = RoundedCornerShape(10.dp)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(color = Color.White)
-            } else {
-                Text("Verify OTP")
-            }
+            Text("Verify OTP")
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         TextButton(
             onClick = {
@@ -161,4 +157,10 @@ fun OTPScreen(navController: NavController) {
         delay(300)
         focusRequesters[0].requestFocus()
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun OTPScreenPreview() {
+    OTPScreen(navController = rememberNavController())
 }

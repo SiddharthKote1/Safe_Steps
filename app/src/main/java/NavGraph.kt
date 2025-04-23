@@ -27,8 +27,8 @@ fun NavGraph(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,
-        modifier = modifier
+        startDestination = Routes.MAIN_SCREEN
+            /*if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,*/
     ) {
         composable(Routes.PHONE_SCREEN) {
             PhoneScreen(navController)

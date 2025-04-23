@@ -6,6 +6,5 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/fine</item>
         <item name="postSplashScreenTheme">@style/Theme.SplashScreen</item>
     </style>
-    <style name="Theme.ChatΠ" parent="android:Theme.Material.Light.NoActionBar" />
 
 </resources>
