@@ -1,15 +1,21 @@
 package com.example.chat
 
+import Room.RoomViewModel
+import Room.UserRepository
 import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.RoomDatabase
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
@@ -25,10 +31,11 @@ fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
 
+
     NavHost(
         navController = navController,
-        startDestination = Routes.MAIN_SCREEN
-            /*if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,*/
+        startDestination =
+            if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,
     ) {
         composable(Routes.PHONE_SCREEN) {
             PhoneScreen(navController)
@@ -37,7 +44,7 @@ fun NavGraph(modifier: Modifier = Modifier) {
             OTPScreen(navController)
         }
         composable(Routes.MAIN_SCREEN) {
-            MainScreen(navController)
+            MainScreen(navController, user=auth.currentUser, viewModel = viewModel)
         }
     }
 }

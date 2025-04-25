@@ -15,13 +15,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        splashScreen.setKeepOnScreenCondition {
-            false
-        }
+        splashScreen.setKeepOnScreenCondition { false }
 
         setContent {
             ChatΠTheme {
