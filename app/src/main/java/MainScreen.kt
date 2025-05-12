@@ -1,17 +1,14 @@
 package com.example.chat
 
-import Room.RoomViewModel
-import Room.User
-import Room.UserDao
-import Room.UserRepository
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseUser
@@ -32,10 +30,11 @@ import java.util.*
 fun MainScreen(
     navController: NavController,
     user: FirebaseUser?,
-    viewModel: RoomViewModel
+    innerPadding: PaddingValues = PaddingValues()
 ) {
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
+    val preferencesHelper = PreferencesHelper(context)
+
     var countryCode1 by remember { mutableStateOf("+91") }
     var phoneNumber1 by remember { mutableStateOf("") }
     var countryCode2 by remember { mutableStateOf("+91") }
@@ -44,239 +43,202 @@ fun MainScreen(
     var age by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
 
-    // Date picker setup
     val calendar = Calendar.getInstance()
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    LaunchedEffect(Unit) {
+        val userData = preferencesHelper.getUserData()
+        userData?.let {
+            name = it.name
+            age = it.age
+            dateOfBirth = it.dob
+            phoneNumber1 = it.phone1
+            phoneNumber2 = it.phone2
+            countryCode1 = it.countryCode1
+            countryCode2 = it.countryCode2
+        }
+    }
 
     val datePicker = DatePickerDialog(
         context,
         { _, selectedYear, selectedMonth, selectedDay ->
             dateOfBirth = "$selectedDay/${selectedMonth + 1}/$selectedYear"
         },
-        year,
-        month,
-        day
+        year, month, day
     ).apply {
         datePicker.maxDate = calendar.timeInMillis
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Profile") },
-                actions = {
-                    Box {
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = Color.Black
-                            )
-                        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .systemBarsPadding()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Name", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Enter your name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            singleLine = true
+        )
 
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.width(180.dp)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Profile") },
-                                onClick = {
-                                    expanded = false
-                                    // navController.navigate("profile")
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Settings") },
-                                onClick = { expanded = false }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Notifications") },
-                                onClick = { expanded = false }
-                            )
-                            if (user != null) {
-                                DropdownMenuItem(
-                                    text = { Text("Log Out") },
-                                    onClick = {
-                                        expanded = false
-                                        // FirebaseAuth.getInstance().signOut()
-                                    }
-                                )
-                            }
-                        }
+        Text("Age", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+        OutlinedTextField(
+            value = age,
+            onValueChange = {
+                if (it.length <= 3 && it.isDigitsOnly()) {
+                    age = it
+                }
+            },
+            label = { Text("Enter your age") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            trailingIcon = {
+                Icon(imageVector = Icons.Default.Face, contentDescription = "Age")
+            }
+        )
+
+        Text("Date of Birth", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+        OutlinedTextField(
+            value = dateOfBirth,
+            onValueChange = {},
+            label = { Text("Select your date of birth") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { datePicker.show() }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Select DOB")
+                }
+            }
+        )
+
+        Text("Phone Numbers", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            OutlinedTextField(
+                value = countryCode1,
+                onValueChange = {
+                    if (it.length <= 4 && it.all { char -> char.isDigit() || char == '+' }) {
+                        countryCode1 = it
                     }
+                },
+                label = { Text("Code") },
+                modifier = Modifier.width(80.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            OutlinedTextField(
+                value = phoneNumber1,
+                onValueChange = {
+                    if (it.length <= 10 && it.all { char -> char.isDigit() }) {
+                        phoneNumber1 = it
+                    }
+                },
+                label = { Text("Phone Number") },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                trailingIcon = {
+                    Icon(Icons.Default.Phone, contentDescription = "Phone number")
                 }
             )
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text("Name", style = MaterialTheme.typography.labelLarge)
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Enter your name") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
 
-            Text("Age", style = MaterialTheme.typography.labelLarge)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
             OutlinedTextField(
-                value = age,
+                value = countryCode2,
                 onValueChange = {
-                    if (it.length <= 3 && it.all { char -> char.isDigit() }) {
-                        age = it
+                    if (it.length <= 4 && it.all { char -> char.isDigit() || char == '+' }) {
+                        countryCode2 = it
                     }
                 },
-                label = { Text("Enter your age") },
-                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Code") },
+                modifier = Modifier.width(80.dp),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Face,
-                        contentDescription = "Phone number"
-                    )
-                }
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
-
-            Text("Date of Birth", style = MaterialTheme.typography.labelLarge)
+            Spacer(modifier = Modifier.width(8.dp))
             OutlinedTextField(
-                value = dateOfBirth,
-                onValueChange = {},
-                label = { Text("Select your date of birth") },
-                modifier = Modifier.fillMaxWidth(),
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { datePicker.show() }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Select the dob of the person2") // Replace with a calendar icon if desired
+                value = phoneNumber2,
+                onValueChange = {
+                    if (it.length <= 10 && it.all { char -> char.isDigit() }) {
+                        phoneNumber2 = it
                     }
+                },
+                label = { Text("Phone Number") },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                trailingIcon = {
+                    Icon(Icons.Default.Phone, contentDescription = "Phone number")
                 }
             )
+        }
 
-            Text("Phone Number", style = MaterialTheme.typography.labelLarge)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = countryCode1,
-                    onValueChange = {
-                        if (it.length <= 4 && it.all { char -> char.isDigit() || char == '+' }) {
-                            countryCode1 = it
-                        }
-                    },
-                    label = { Text("Code") },
-                    modifier = Modifier.width(80.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val filled = name.isNotBlank() && age.isNotBlank() && dateOfBirth.isNotBlank() &&
+                phoneNumber1.length == 10 && phoneNumber2.length == 10
+
+        Button(
+            onClick = {
+                preferencesHelper.saveUserData(
+                    name = name,
+                    age = age,
+                    dob = dateOfBirth,
+                    phone1 = phoneNumber1,
+                    phone2 = phoneNumber2,
+                    countryCode1 = countryCode1,
+                    countryCode2 = countryCode2
                 )
-
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                OutlinedTextField(
-                    value = phoneNumber1,
-                    onValueChange = {
-                        if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                            phoneNumber1 = it
-                        }
-                    },
-                    label = { Text("Phone Number") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = "Phone number"
-                        )
-                    }
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = countryCode2,
-                    onValueChange = {
-                        if (it.length <= 4 && it.all { char -> char.isDigit() || char == '+' }) {
-                            countryCode2 = it
-                        }
-                    },
-                    label = { Text("Code") },
-                    modifier = Modifier.width(80.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                OutlinedTextField(
-                    value = phoneNumber2,
-                    onValueChange = {
-                        if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                            phoneNumber2 = it
-                        }
-                    },
-                    label = { Text("Phone Number") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = "Phone number"
-                        )
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(2.dp))
-            val filled= name.isNotBlank() && age.isNotBlank() && dateOfBirth.isNotBlank() &&
-                    phoneNumber1.length ==10 && phoneNumber2.length ==10
-            Button(
-                onClick = {  if (filled) {
-                    viewModel.insertUser(
-                        User(
-                            name = name,
-                            age = age,
-                            dateOfBirth = dateOfBirth,
-                            phone1 = "$countryCode1$phoneNumber1",
-                            phone2 = "$countryCode2$phoneNumber2"
-                        ),
-                    )
+                navController.navigate("NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2") {
+                    popUpTo("MainScreen") { inclusive = true }
                 }
-                          },
-                shape= RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (filled) Color(0xFF0073E6) else Color.LightGray
-                ),
-                modifier=Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Continue")
-            }
+            },
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (filled) Color(0xFF0073E6) else Color.LightGray
+            ),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(vertical = 8.dp),
+            enabled = filled
+        ) {
+            Text("Continue")
         }
     }
 }
-/*
+
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    MaterialTheme {
-        MainScreen(
-            navController = rememberNavController(),
-            user = null,
-            viewModel = RoomViewModel(repository = UserRepository(userDao = UserDao))
-        )
-    }
+    val navController = rememberNavController()
+    MainScreen(navController = navController, user = null)
 }
-*/

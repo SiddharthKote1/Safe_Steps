@@ -1,7 +1,5 @@
 package com.example.chat
 
-import Room.RoomViewModel
-import Room.UserRepository
 import android.app.Activity
 import android.content.Context
 import android.util.Log
@@ -12,9 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.room.RoomDatabase
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
@@ -34,8 +34,8 @@ fun NavGraph(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination =
-            if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,
+        startDestination = Routes.MAIN_SCREEN
+          //  if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,
     ) {
         composable(Routes.PHONE_SCREEN) {
             PhoneScreen(navController)
@@ -44,7 +44,33 @@ fun NavGraph(modifier: Modifier = Modifier) {
             OTPScreen(navController)
         }
         composable(Routes.MAIN_SCREEN) {
-            MainScreen(navController, user=auth.currentUser, viewModel = viewModel)
+            MainScreen(navController, user=auth.currentUser)
+        }
+        composable(
+            route = "NeeScreen/{name}/{code1}/{code2}/{phone1}/{phone2}",
+            arguments = listOf(
+                navArgument("name") { type = NavType.StringType },
+                navArgument("code1") { type = NavType.StringType },
+                navArgument("code2") { type = NavType.StringType },
+                navArgument("phone1") { type = NavType.StringType },
+                navArgument("phone2") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val name = backStackEntry.arguments?.getString("name") ?: ""
+            val code1 = backStackEntry.arguments?.getString("code1") ?: ""
+            val code2 = backStackEntry.arguments?.getString("code2") ?: ""
+            val phone1 = backStackEntry.arguments?.getString("phone1") ?: ""
+            val phone2 = backStackEntry.arguments?.getString("phone2") ?: ""
+
+            NeeScreen(
+                navController = navController,
+                user = auth.currentUser,
+                name = name,
+                countryCode1 = code1,
+                countryCode2 = code2,
+                phoneNumber1 = phone1,
+                phoneNumber2 = phone2
+            )
         }
     }
 }

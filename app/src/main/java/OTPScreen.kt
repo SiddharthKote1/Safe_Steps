@@ -1,9 +1,9 @@
 package com.example.chat
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +31,7 @@ fun OTPScreen(navController: NavController) {
 
     val otpDigits = remember { mutableStateListOf("", "", "", "", "", "") }
     val focusRequesters = remember { List(6) { FocusRequester() } }
+    var otp by remember { mutableStateOf("") }
     var timeLeft by remember { mutableStateOf(60) }
     var canResend by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -54,7 +56,7 @@ fun OTPScreen(navController: NavController) {
 
         LottieAnimation(
             composition,
-            modifier = Modifier.size(350.dp)
+            modifier = Modifier.size(300.dp)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -68,37 +70,16 @@ fun OTPScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            otpDigits.forEachIndexed { index, digit ->
-                OutlinedTextField(
-                    value = digit,
-                    onValueChange = { newValue ->
-                        if (newValue.length <= 1 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
-                            otpDigits[index] = newValue
-
-                            if (newValue.isNotEmpty() && index < 5) {
-                                focusRequesters[index + 1].requestFocus()
-                            } else if (newValue.isEmpty() && index > 0) {
-                                focusRequesters[index - 1].requestFocus()
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .width(48.dp)
-                        .focusRequester(focusRequesters[index]),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    textStyle = LocalTextStyle.current.copy(
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center
-                    )
-                )
+        OtpInput(
+            otpDigits = otpDigits,
+            focusRequesters = focusRequesters,
+            onOtpChanged = { updatedOtp ->
+                otp = updatedOtp
             }
-        }
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        val otp = otpDigits.joinToString("")
         Button(
             onClick = {
                 if (otp.length == 6) {
@@ -159,8 +140,50 @@ fun OTPScreen(navController: NavController) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+
 @Composable
-fun OTPScreenPreview() {
-    OTPScreen(navController = rememberNavController())
+fun OtpInput(
+    otpDigits: MutableList<String>,
+    focusRequesters: List<FocusRequester>,
+    onOtpChanged: (String) -> Unit
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        otpDigits.forEachIndexed { index, digit ->
+            OutlinedTextField(
+                value = digit,
+                onValueChange = { newValue ->
+                    if (newValue.length <= 1 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
+                        otpDigits[index] = newValue
+                        onOtpChanged(otpDigits.joinToString(""))
+
+                        if (newValue.isNotEmpty() && index < otpDigits.lastIndex) {
+                            focusRequesters[index + 1].requestFocus()
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .width(48.dp)
+                    .focusRequester(focusRequesters[index])
+                    .onKeyEvent { event ->
+                        if (
+                            event.type == KeyEventType.KeyDown &&
+                            event.key == Key.Backspace &&
+                            otpDigits[index].isEmpty() &&
+                            index > 0
+                        ) {
+                            focusRequesters[index - 1].requestFocus()
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            )
+        }
+    }
 }

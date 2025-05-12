@@ -17,9 +17,6 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        splashScreen.setKeepOnScreenCondition { false }
-
         setContent {
             ChatΠTheme {
                 Surface(
