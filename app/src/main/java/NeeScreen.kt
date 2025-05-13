@@ -11,17 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.*
 import com.google.firebase.auth.FirebaseUser
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NeeScreen(
-    navController: NavController,
     user: FirebaseUser?,
     name: String,
     countryCode1: String,
@@ -32,27 +28,31 @@ fun NeeScreen(
     val context = LocalContext.current
 
     val permissionsState = rememberMultiplePermissionsState(
-        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            listOf(
-                Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        } else {
-            listOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
+        permissions = buildList {
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            add(Manifest.permission.SEND_SMS)
+            add(Manifest.permission.CALL_PHONE)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     )
 
-    // This ensures the permission request is only triggered once
     var requestedOnce by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         if (!permissionsState.allPermissionsGranted && !requestedOnce) {
             requestedOnce = true
             permissionsState.launchMultiplePermissionRequest()
+        }
+    }
+
+    LaunchedEffect(permissionsState.allPermissionsGranted) {
+        if (permissionsState.allPermissionsGranted) {
+            EmergencyHelper.contact1 = "$countryCode1$phoneNumber1"
+            EmergencyHelper.contact2 = "$countryCode2$phoneNumber2"
         }
     }
 
@@ -93,6 +93,14 @@ fun NeeScreen(
                 }) {
                     Text("Stop Location Service")
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                Button(onClick = {
+                    EmergencyHelper.sendSmsAndCall(context)
+                }) {
+                    Text("Send Emergency SMS and Call")
+                }
             } else {
                 Text("Permissions are required to proceed.")
                 Spacer(Modifier.height(16.dp))
@@ -109,4 +117,3 @@ fun NeeScreen(
         }
     }
 }
-

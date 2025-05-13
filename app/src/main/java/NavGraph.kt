@@ -63,7 +63,6 @@ fun NavGraph(modifier: Modifier = Modifier) {
             val phone2 = backStackEntry.arguments?.getString("phone2") ?: ""
 
             NeeScreen(
-                navController = navController,
                 user = auth.currentUser,
                 name = name,
                 countryCode1 = code1,
