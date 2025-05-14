@@ -20,11 +20,11 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     private var checkJob: Job? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Empty method, but you can handle accessibility events here if needed
+        // Empty method
     }
 
     override fun onInterrupt() {
-        // Handle any interrupts if necessary
+        // Handle interrupts if needed
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {

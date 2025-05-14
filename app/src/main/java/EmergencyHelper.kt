@@ -1,9 +1,13 @@
+package com.example.chat
+
 import android.content.Context
 import android.content.Intent
 import android.telephony.SmsManager
 import android.widget.Toast
-import com.example.chat.PreferencesHelper
-import androidx.core.net.toUri
+import androidx.core.content.ContextCompat
+import android.net.Uri
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 
 object EmergencyHelper {
 
@@ -11,14 +15,13 @@ object EmergencyHelper {
     var contact2: String? = null
 
     fun sendSmsAndCall(context: Context) {
-        // Check if contacts are set
         val user = PreferencesHelper(context).getUserData()
-        if (user == null || contact1 == null || contact2 == null) {
+        if (user == null || contact1.isNullOrEmpty() || contact2.isNullOrEmpty()) {
             Toast.makeText(context, "No emergency contacts saved or not set.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val message = "This is an emergency! Please help me."
+        val message = "This is an emergency! Please help me. My name is ${user.name}"
 
         // Send SMS
         try {
@@ -30,19 +33,20 @@ object EmergencyHelper {
             Toast.makeText(context, "Failed to send SMS: ${e.message}", Toast.LENGTH_LONG).show()
         }
 
-        // Make a phone call to contact1
-        try {
+        // Make the call directly
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            // Proceed with the call if permission is granted
             val callIntent = Intent(Intent.ACTION_CALL).apply {
-                data = "tel:$contact1".toUri()
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                data = Uri.parse("tel:$contact1")
             }
-
             context.startActivity(callIntent)
-        } catch (e: Exception) {
-            Toast.makeText(context, "Failed to make call: ${e.message}", Toast.LENGTH_LONG).show()
+        } else {
+            // Request the permission if not granted
+            ActivityCompat.requestPermissions(
+                context as android.app.Activity,
+                arrayOf(android.Manifest.permission.CALL_PHONE),
+                1 // Request code for CALL_PHONE permission
+            )
         }
     }
 }
-
-
-
