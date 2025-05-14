@@ -3,6 +3,7 @@ package com.example.chat
 import android.accessibilityservice.AccessibilityService
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,11 +19,17 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
 
     private var checkJob: Job? = null
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Empty method, but you can handle accessibility events here if needed
+    }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        // Handle any interrupts if necessary
+    }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        Log.d("VolumeButtonService", "Key event detected: ${event.keyCode}, Action: ${event.action}")
+
         when (event.keyCode) {
             KeyEvent.KEYCODE_VOLUME_UP -> {
                 handleKeyEvent(event, isUp = true)
@@ -39,6 +46,8 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     private fun handleKeyEvent(event: KeyEvent, isUp: Boolean) {
         if (event.action == KeyEvent.ACTION_DOWN) {
             if (isUp) volumeUpPressed = true else volumeDownPressed = true
+
+            Log.d("VolumeButtonService", "Volume Up: $volumeUpPressed, Volume Down: $volumeDownPressed")
 
             if (volumeUpPressed && volumeDownPressed && checkJob == null) {
                 pressStartTime = System.currentTimeMillis()
@@ -57,7 +66,7 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     }
 
     private fun triggerEmergencyAction() {
-        // Call or send SMS using a helper function
+        Log.d("VolumeButtonService", "Emergency action triggered!")
         EmergencyHelper.sendSmsAndCall(applicationContext)
     }
 }
