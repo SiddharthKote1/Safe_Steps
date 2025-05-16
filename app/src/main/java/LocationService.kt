@@ -13,7 +13,6 @@ import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.LatLng
 import java.util.Locale
 
 class LocationService : Service() {
@@ -34,6 +33,10 @@ class LocationService : Service() {
         object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 val location = locationResult.lastLocation ?: return
+
+                LocationHolder.latitude = location.latitude
+                LocationHolder.longitude = location.longitude
+
                 val address = getAddressFromLocation(location.latitude, location.longitude)
                 createNotification(
                     location.latitude.toString(),
@@ -43,6 +46,7 @@ class LocationService : Service() {
             }
         }
     }
+
 
     override fun onCreate() {
         super.onCreate()
@@ -135,4 +139,19 @@ class LocationService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    fun onLocationResult(locationResult: LocationResult) {
+        val location = locationResult.lastLocation ?: return
+
+        LocationHolder.latitude = location.latitude
+        LocationHolder.longitude = location.longitude
+
+        val address = getAddressFromLocation(location.latitude, location.longitude)
+        createNotification(
+            location.latitude.toString(),
+            location.longitude.toString(),
+            address
+        )
+    }
+
 }

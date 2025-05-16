@@ -1,13 +1,16 @@
 package com.example.chat
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.telephony.SmsManager
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import android.net.Uri
-import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.*
 
 object EmergencyHelper {
 
@@ -17,36 +20,52 @@ object EmergencyHelper {
     fun sendSmsAndCall(context: Context) {
         val user = PreferencesHelper(context).getUserData()
         if (user == null || contact1.isNullOrEmpty() || contact2.isNullOrEmpty()) {
-            Toast.makeText(context, "No emergency contacts saved or not set.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "User data or contacts not available", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val message = "This is an emergency! Please help me. My name is ${user.name}"
-
-        // Send SMS
-        try {
-            val smsManager = SmsManager.getDefault()
-            smsManager.sendTextMessage(contact1, null, message, null, null)
-            smsManager.sendTextMessage(contact2, null, message, null, null)
-            Toast.makeText(context, "Emergency SMS sent", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Failed to send SMS: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-
-        // Make the call directly
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-            // Proceed with the call if permission is granted
-            val callIntent = Intent(Intent.ACTION_CALL).apply {
-                data = Uri.parse("tel:$contact1")
+        CoroutineScope(Dispatchers.Main).launch {
+            val locationReady = waitForLocation()
+            if (!locationReady) {
+                Toast.makeText(context, "Unable to fetch location. Try again.", Toast.LENGTH_SHORT).show()
+                return@launch
             }
-            context.startActivity(callIntent)
-        } else {
-            // Request the permission if not granted
-            ActivityCompat.requestPermissions(
-                context as android.app.Activity,
-                arrayOf(android.Manifest.permission.CALL_PHONE),
-                1 // Request code for CALL_PHONE permission
-            )
+
+            val lat = LocationHolder.latitude
+            val lng = LocationHolder.longitude
+            val locationUrl = "https://maps.google.com/?q=$lat,$lng"
+            val message = "EMERGENCY! I'm ${user.name}. My location: $locationUrl"
+
+            try {
+                val smsManager = SmsManager.getDefault()
+                smsManager.sendTextMessage(contact1, null, message, null, null)
+                smsManager.sendTextMessage(contact2, null, message, null, null)
+                Toast.makeText(context, "Emergency SMS sent", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "SMS failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+
+            // Make emergency call
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$contact1"))
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+            } else if (context is Activity) {
+                ActivityCompat.requestPermissions(
+                    context,
+                    arrayOf(Manifest.permission.CALL_PHONE),
+                    1
+                )
+            }
         }
+    }
+
+    private suspend fun waitForLocation(timeoutMillis: Long = 5000): Boolean {
+        val startTime = System.currentTimeMillis()
+        while (System.currentTimeMillis() - startTime < timeoutMillis) {
+            if (LocationHolder.latitude != null && LocationHolder.longitude != null) return true
+            delay(500)
+        }
+        return false
     }
 }

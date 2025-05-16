@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,6 +18,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.room.RoomDatabase
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
@@ -30,12 +35,42 @@ var storedPhoneNumber: String = ""
 fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+    val activity = context as Activity
 
+    val googleSignInHelper = GoogleSignInHelper(context)
+    val account = GoogleSignIn.getLastSignedInAccount(context)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+                Toast.makeText(context, "Welcome ${account.email}", Toast.LENGTH_SHORT).show()
+                navController.navigate("HomeScreen") {
+                    popUpTo("LoginScreen") { inclusive = true }
+                }
+            } catch (e: ApiException) {
+                Toast.makeText(context, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Sign-in canceled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val currentUser = auth.currentUser
+    val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(context)
+    val startDestination = if (currentUser != null || lastSignedInAccount != null) {
+        Routes.MAIN_SCREEN
+    } else {
+        Routes.PHONE_SCREEN
+    }
 
     NavHost(
         navController = navController,
-        startDestination = Routes.MAIN_SCREEN
-          //  if (auth.currentUser == null) Routes.PHONE_SCREEN else Routes.MAIN_SCREEN,
+        startDestination = startDestination
     ) {
         composable(Routes.PHONE_SCREEN) {
             PhoneScreen(navController)

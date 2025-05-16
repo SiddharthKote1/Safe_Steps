@@ -1,6 +1,9 @@
 package com.example.chat
 
+import android.app.Activity
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun PhoneScreen(navController: NavController) {
@@ -26,8 +31,31 @@ fun PhoneScreen(navController: NavController) {
     var phoneNumber by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val activity = context as Activity
+    val googleSignInHelper = GoogleSignInHelper(context)
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { activityResult -> // ✅ Correctly name the lambda parameter
+        val task = GoogleSignIn.getSignedInAccountFromIntent(activityResult.data)
+        try {
+            val account = task.result
+            Toast.makeText(context, "Signed in as ${account?.email}", Toast.LENGTH_SHORT).show()
+
+            // ✅ Navigate and clear backstack
+            navController.navigate(Routes.MAIN_SCREEN) {
+                popUpTo(Routes.PHONE_SCREEN) { inclusive = true }
+            }
+
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 
     Column(
+
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -38,7 +66,7 @@ fun PhoneScreen(navController: NavController) {
         Image(
             painter = painterResource(id = R.drawable.safe),
             contentDescription = "App Logo",
-            modifier = Modifier.size(350.dp)
+            modifier = Modifier.size(300.dp)
         )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
@@ -115,10 +143,40 @@ fun PhoneScreen(navController: NavController) {
         ) {
             Text("Generate OTP")
         }
+        Spacer(modifier=Modifier.height(18.dp))
+
+        Text("OR", color = Color.Gray)
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // Google Sign-In Button
+        Button(
+            onClick = {
+                val signInIntent = googleSignInHelper.client.signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            }
+            ,
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+            shape = RoundedCornerShape(10.dp),
+            border = ButtonDefaults.outlinedButtonBorder,
+            //modifier = Modifier.fillMaxWidth()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.goo),
+                contentDescription = "Google Logo",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Sign in with Google",
+                color = Color.Black,
+                fontSize = 16.sp
+            )
+        }
     }
 }
 
-    @Composable
+@Composable
 @Preview(showBackground = true)
 fun PhoneScreenPreview() {
     PhoneScreen(navController = rememberNavController())
