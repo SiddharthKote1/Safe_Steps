@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,8 +64,9 @@ fun PhoneScreen(navController: NavController) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFFF6B6B), // Blue
-                        Color(0xFFFFD93D)  // Cyan
+                        Color(0xFFFFC1CC), // light pink
+                        Color(0xFFB5F6CC), // mint
+                        Color(0xFFB2EBF2)
                     )
                 )
             )
@@ -155,7 +157,7 @@ fun PhoneScreen(navController: NavController) {
             },
             enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF0073E6)
+                containerColor = Color(0xFF26A69A)
             ),
             shape = RoundedCornerShape(10.dp)
         ) {
@@ -163,7 +165,7 @@ fun PhoneScreen(navController: NavController) {
         }
         Spacer(modifier = Modifier.height(18.dp))
 
-        Text("OR", color = Color.Gray)
+        Text("OR", color = Color.Black)
         Spacer(modifier = Modifier.height(18.dp))
 
         Button(
@@ -175,7 +177,8 @@ fun PhoneScreen(navController: NavController) {
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(10.dp),
-            border = ButtonDefaults.outlinedButtonBorder
+            border = BorderStroke(1.dp, Color.LightGray), // subtle border
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.goo),
@@ -189,6 +192,7 @@ fun PhoneScreen(navController: NavController) {
                 fontSize = 16.sp
             )
         }
+
     }
 }
 
