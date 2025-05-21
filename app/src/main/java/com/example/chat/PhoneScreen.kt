@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,18 +33,21 @@ fun PhoneScreen(navController: NavController) {
     var phoneNumber by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val activity = context as Activity
-    val googleSignInHelper = GoogleSignInHelper(context)
+    val activity = context as? Activity
+
+    // Only initialize if activity is not null
+    val googleSignInHelper = remember(activity) {
+        activity?.let { GoogleSignInHelper(it) }
+    }
 
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) { activityResult -> // ✅ Correctly name the lambda parameter
+    ) { activityResult ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(activityResult.data)
         try {
             val account = task.result
             Toast.makeText(context, "Signed in as ${account?.email}", Toast.LENGTH_SHORT).show()
 
-            // ✅ Navigate and clear backstack
             navController.navigate(Routes.MAIN_SCREEN) {
                 popUpTo(Routes.PHONE_SCREEN) { inclusive = true }
             }
@@ -52,10 +57,20 @@ fun PhoneScreen(navController: NavController) {
         }
     }
 
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFF6B6B), // Blue
+                        Color(0xFFFFD93D)  // Cyan
+                    )
+                )
+            )
+    )
 
     Column(
-
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -74,11 +89,14 @@ fun PhoneScreen(navController: NavController) {
             fontSize = 24.sp,
             textAlign = TextAlign.Start,
         )
-        Spacer(modifier=Modifier.height(10.dp))
-        Text("You will receive a 6 digit code for phone number verification",
-            modifier=Modifier.width(280.dp)
-                .padding(start=30.dp),
-            color=Color.Gray)
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            "You will receive a 6 digit code for phone number verification",
+            modifier = Modifier
+                .width(280.dp)
+                .padding(start = 30.dp),
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(
@@ -143,23 +161,21 @@ fun PhoneScreen(navController: NavController) {
         ) {
             Text("Generate OTP")
         }
-        Spacer(modifier=Modifier.height(18.dp))
-
-        Text("OR", color = Color.Gray)
-
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Google Sign-In Button
+        Text("OR", color = Color.Gray)
+        Spacer(modifier = Modifier.height(18.dp))
+
         Button(
             onClick = {
-                val signInIntent = googleSignInHelper.client.signInIntent
-                googleSignInLauncher.launch(signInIntent)
-            }
-            ,
+                googleSignInHelper?.let {
+                    val signInIntent = it.client.signInIntent
+                    googleSignInLauncher.launch(signInIntent)
+                }
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(10.dp),
-            border = ButtonDefaults.outlinedButtonBorder,
-            //modifier = Modifier.fillMaxWidth()
+            border = ButtonDefaults.outlinedButtonBorder
         ) {
             Image(
                 painter = painterResource(id = R.drawable.goo),
@@ -176,8 +192,8 @@ fun PhoneScreen(navController: NavController) {
     }
 }
 
-@Composable
 @Preview(showBackground = true)
+@Composable
 fun PhoneScreenPreview() {
     PhoneScreen(navController = rememberNavController())
 }
