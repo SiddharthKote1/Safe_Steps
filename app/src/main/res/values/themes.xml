@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Splash Theme -->
+    <style name="Theme.MySplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/Blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/op</item>
+        <item name="postSplashScreenTheme">@style/Theme.MyApp</item>
+    </style>
+
+    <!-- Main App Theme without ActionBar -->
+    <style name="Theme.MyApp" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Customize colors here if needed -->
+        <item name="android:statusBarColor">@color/Blue</item>
+        <item name="android:navigationBarColor">@color/Blue</item>
+    </style>
+
+</resources>
+

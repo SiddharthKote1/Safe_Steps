@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "199071944965",
+    "project_id": "savesteps-1f0e4",
+    "storage_bucket": "savesteps-1f0e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:199071944965:android:08121a88ea5894e4d3a76c",
+        "android_client_info": {
+          "package_name": "com.example.chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLNDPOwA06llCHuiu5CU4Pw_qOIqLmMaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
