@@ -1,5 +1,6 @@
 package com.example.chat
 
+import HelpScreen
 import Screens.IntroScreen
 import Screens.PermissionScreen
 import Screens.MainScreen
@@ -10,6 +11,8 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -59,7 +62,10 @@ fun NavGraph(modifier: Modifier = Modifier) {
         composable(Routes.LOCATION_SCREEN) {
             LocationPermission(navController = navController)
         }
+        composable(Routes.HELP_SCREEN){
+            HelpScreen(navController=navController)
 
+        }
         // MainScreen for user info
         composable(Routes.MAIN_SCREEN) {
             MainScreen(navController = navController)
@@ -81,7 +87,8 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 countryCode1 = backStackEntry.arguments?.getString("countryCode1") ?: "",
                 countryCode2 = backStackEntry.arguments?.getString("countryCode2") ?: "",
                 phoneNumber1 = backStackEntry.arguments?.getString("phoneNumber1") ?: "",
-                phoneNumber2 = backStackEntry.arguments?.getString("phoneNumber2") ?: ""
+                phoneNumber2 = backStackEntry.arguments?.getString("phoneNumber2") ?: "",
+                navController= navController
             )
         }
     }

@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -42,7 +43,8 @@ fun NeeScreen(
     countryCode1: String = "+91",
     countryCode2: String = "+91",
     phoneNumber1: String = "",
-    phoneNumber2: String = ""
+    phoneNumber2: String = "",
+    navController: NavController
 ) {
     val context = LocalContext.current
     val preferencesHelper = PreferencesHelper(context)
@@ -147,28 +149,22 @@ fun NeeScreen(
                             text = { Text("Edit Profile") },
                             onClick = {
                                 menuExpanded = false
-                                // handle edit profile navigation
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Permissions") },
-                            onClick = {
-                                menuExpanded = false
-                                // handle permissions screen
+                                navController.navigate(Routes.MAIN_SCREEN)
                             }
                         )
                         DropdownMenuItem(
                             text = { Text("Settings") },
                             onClick = {
                                 menuExpanded = false
-                                // open settings screen
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                context.startActivity(intent)
                             }
                         )
                         DropdownMenuItem(
                             text = { Text("Help") },
                             onClick = {
                                 menuExpanded = false
-                                // show help dialog/screen
+                                navController.navigate(Routes.HELP_SCREEN)
                             }
                         )
                     }
@@ -240,6 +236,7 @@ fun NeeScreenPreview() {
         countryCode1 = "+91",
         countryCode2 = "+91",
         phoneNumber1 = "9876543210",
-        phoneNumber2 = "9123456780"
+        phoneNumber2 = "9123456780",
+        navController = NavController(context = LocalContext.current)
     )
 }

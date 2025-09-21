@@ -8,7 +8,6 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -17,15 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import com.example.SafeSteps.R
 import com.example.chat.PreferencesHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -37,11 +38,9 @@ fun PermissionScreen(navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Preferences to skip permission & intro next time
     val preferencesHelper = PreferencesHelper(context)
     val setupDone = preferencesHelper.isAppSetupDone()
 
-    // If setup is already done, directly navigate to main screen
     LaunchedEffect(setupDone) {
         if (setupDone) {
             navController.navigate(Routes.MAIN_SCREEN) {
@@ -50,11 +49,9 @@ fun PermissionScreen(navController: NavController) {
         }
     }
 
-    // Bottom sheet state for Accessibility info
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    // Permissions list
     val permissionsState = rememberMultiplePermissionsState(
         permissions = buildList {
             add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -73,7 +70,6 @@ fun PermissionScreen(navController: NavController) {
 
     var accessibilityEnabled by remember { mutableStateOf(isAccessibilityEnabled(context)) }
 
-    // Refresh permissions & accessibility on resume
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -90,21 +86,13 @@ fun PermissionScreen(navController: NavController) {
         derivedStateOf { runtimePermissionsGranted && accessibilityEnabled }
     }
 
-    LaunchedEffect(Unit) {
-        if (preferencesHelper.isAppSetupDone()) {
-            navController.navigate(Routes.MAIN_SCREEN) {
-                popUpTo(Routes.PERMISSION_SCREEN) { inclusive = true }
-            }
-        }
-    }
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         "Access Permission",
-                        style = MaterialTheme.typography.headlineLarge, // main page title
+                        style = MaterialTheme.typography.headlineLarge,
                         color = Color.White
                     )
                 },
@@ -121,10 +109,7 @@ fun PermissionScreen(navController: NavController) {
                 .padding(paddingValues)
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF3A7BD5), // Blue
-                            Color(0xFF00D2FF)  // Light Cya
-                        )
+                        colors = listOf(Color(0xFF3A7BD5), Color(0xFF00D2FF))
                     )
                 )
         ) {
@@ -135,9 +120,7 @@ fun PermissionScreen(navController: NavController) {
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top
             ) {
-                // Spacer(modifier = Modifier.height(10.dp))
-
-                // Step 1
+                // Step 1: Accessibility Service
                 Text(
                     text = "1.Enable Accessibility Service",
                     style = MaterialTheme.typography.headlineSmall,
@@ -170,10 +153,9 @@ fun PermissionScreen(navController: NavController) {
                     }
                 }
 
-
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Step 2
+                // Step 2: Permissions
                 Text(
                     text = "2. Allow App Permissions",
                     style = MaterialTheme.typography.headlineSmall,
@@ -183,8 +165,8 @@ fun PermissionScreen(navController: NavController) {
                 Text(
                     text = "SafeSteps app needs Location, SMS, Phone Call, and Notification permissions to detect SOS triggers, share your location, and alert your emergency contacts.",
                     style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Justify,
                     color = Color.White,
+                    textAlign = TextAlign.Justify,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -218,6 +200,7 @@ fun PermissionScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+                // Continue button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -245,12 +228,12 @@ fun PermissionScreen(navController: NavController) {
                 }
             }
 
-            // Bottom sheet for Accessibility explanation
+            // Bottom Sheet
             if (showBottomSheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showBottomSheet = false },
                     sheetState = bottomSheetState,
-                    containerColor = Color(0xFFEEF6FF) // light neutral background
+                    containerColor = Color(0xFFEEF6FF)
                 ) {
                     Column(
                         modifier = Modifier
@@ -269,7 +252,16 @@ fun PermissionScreen(navController: NavController) {
                             color = Color.DarkGray
                         )
 
-                        Spacer(modifier = Modifier.weight(1f)) // push buttons to bottom
+                        Spacer(modifier=Modifier.height(50.dp))
+                        // GIF
+                        GifImage(
+                            resourceId = R.drawable.safestepsinfo,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(500.dp)
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -307,6 +299,27 @@ fun PermissionScreen(navController: NavController) {
             }
         }
     }
+}
+
+@Composable
+fun GifImage(resourceId: Int, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            if (Build.VERSION.SDK_INT >= 28) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
+
+    AsyncImage(
+        model = resourceId,
+        contentDescription = "Accessibility Illustration",
+        modifier = modifier,
+        imageLoader = imageLoader
+    )
 }
 
 fun isAccessibilityEnabled(context: Context): Boolean {
