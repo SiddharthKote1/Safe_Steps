@@ -22,11 +22,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import com.example.SafeSteps.R
 import com.example.chat.PreferencesHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -120,7 +115,6 @@ fun PermissionScreen(navController: NavController) {
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top
             ) {
-                // Step 1: Accessibility Service
                 Text(
                     text = "1.Enable Accessibility Service",
                     style = MaterialTheme.typography.headlineSmall,
@@ -237,32 +231,41 @@ fun PermissionScreen(navController: NavController) {
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth() // Don't fill full height
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.Start
                     ) {
                         Text(
-                            "Why Accessibility Needed",
+                            "Why Accessibility Is Needed",
                             style = MaterialTheme.typography.headlineSmall,
                             color = Color(0xFF0052D4)
                         )
                         Text(
-                            "The accessibility service allows the app to detect SOS triggers, send emergency SMS, and make calls automatically. Please enable it in your device settings.",
+                            "The Accessibility Service allows SafeSteps to detect SOS triggers, send emergency SMS, and make calls automatically. Please enable it by following these steps:",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.DarkGray
                         )
 
-                        Spacer(modifier=Modifier.height(50.dp))
-                        // GIF
-                        GifImage(
-                            resourceId = R.drawable.safestepsinfo,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(500.dp)
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Steps to Enable:",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color(0xFF0052D4)
+                        )
+                        Text(
+                            "1. Tap Open Settings below.\n" +
+                                    "2. Find SafeSteps in the list of services.\n" +
+                                    "3. Tap on SafeSteps.\n" +
+                                    "4. Toggle the switch to ON.\n" +
+                                    "5. Confirm any pop-ups asking for permission.\n" +
+                                    "6. Return to this screen and tap Continue.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.DarkGray
                         )
 
-                        Spacer(modifier = Modifier.weight(1f))
-
+                        // ✅ Buttons right under the instructions
+                        Spacer(modifier = Modifier.height(20.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -280,8 +283,7 @@ fun PermissionScreen(navController: NavController) {
 
                             Button(
                                 onClick = {
-                                    val intent =
-                                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     context.startActivity(intent)
                                     showBottomSheet = false
                                 },
@@ -301,26 +303,6 @@ fun PermissionScreen(navController: NavController) {
     }
 }
 
-@Composable
-fun GifImage(resourceId: Int, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val imageLoader = ImageLoader.Builder(context)
-        .components {
-            if (Build.VERSION.SDK_INT >= 28) {
-                add(ImageDecoderDecoder.Factory())
-            } else {
-                add(GifDecoder.Factory())
-            }
-        }
-        .build()
-
-    AsyncImage(
-        model = resourceId,
-        contentDescription = "Accessibility Illustration",
-        modifier = modifier,
-        imageLoader = imageLoader
-    )
-}
 
 fun isAccessibilityEnabled(context: Context): Boolean {
     val enabledServices = Settings.Secure.getString(

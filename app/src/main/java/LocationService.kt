@@ -13,6 +13,7 @@ import android.location.Geocoder
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
@@ -107,7 +108,7 @@ class LocationService : Service() {
     @Suppress("MissingPermission")
     private fun createNotification(lat: String, lng: String, address: String) {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.iio)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
             .setContentTitle("Location Update")
             .setContentText("Lat: $lat, Lng: $lng")
