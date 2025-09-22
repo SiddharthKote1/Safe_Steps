@@ -1,4 +1,4 @@
-package com.example.SafeSteps.ui.theme
+package com.Siddharth.SafeSteps.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

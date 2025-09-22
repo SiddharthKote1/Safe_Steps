@@ -1,4 +1,4 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import android.Manifest
 import android.app.Activity
@@ -10,7 +10,7 @@ import android.telephony.SmsManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.chat.PreferencesHelper
+import com.Siddharth.chat.PreferencesHelper
 import kotlinx.coroutines.*
 
 object EmergencyHelper {

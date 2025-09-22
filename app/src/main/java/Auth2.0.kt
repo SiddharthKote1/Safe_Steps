@@ -1,4 +1,4 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import android.app.Activity
 import com.google.android.gms.auth.api.signin.GoogleSignIn

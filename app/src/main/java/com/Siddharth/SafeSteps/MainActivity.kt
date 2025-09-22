@@ -1,4 +1,4 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import android.os.Build
 import android.os.Bundle
@@ -11,8 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.SafeSteps.ui.theme.ChatΠTheme
-import com.example.chat.NavGraph
+import com.Siddharth.SafeSteps.ui.theme.ChatΠTheme
+import com.Siddharth.chat.NavGraph
 
 class MainActivity : ComponentActivity() {
 

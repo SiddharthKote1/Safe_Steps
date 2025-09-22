@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.SafeSteps"
+    namespace = "com.Siddharth.SafeSteps"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.SafeSteps"
+        applicationId = "com.Siddharth.SafeSteps"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

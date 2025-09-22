@@ -1,4 +1,4 @@
-package com.example.SafeSteps.ui.theme
+package com.Siddharth.SafeSteps.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

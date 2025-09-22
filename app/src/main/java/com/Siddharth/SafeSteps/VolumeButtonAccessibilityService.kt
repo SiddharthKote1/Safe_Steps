@@ -1,7 +1,6 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import android.accessibilityservice.AccessibilityService
-import android.annotation.SuppressLint
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import android.util.Log

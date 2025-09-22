@@ -1,4 +1,4 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

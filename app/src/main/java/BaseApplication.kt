@@ -1,4 +1,4 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 import android.app.Application
 import android.app.NotificationChannel

@@ -1,4 +1,4 @@
-package com.example.chat
+package com.Siddharth.chat
 
 import android.content.Context
 import android.content.SharedPreferences

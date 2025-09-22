@@ -1,8 +1,7 @@
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
 
 import android.Manifest
-import com.example.SafeSteps.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -13,7 +12,6 @@ import android.location.Geocoder
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
