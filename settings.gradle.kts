@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Chat π"
+rootProject.name = "Safe Steps"
 include(":app")
  

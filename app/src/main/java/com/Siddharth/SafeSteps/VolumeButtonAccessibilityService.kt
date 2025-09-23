@@ -1,27 +1,20 @@
 package com.Siddharth.SafeSteps
 
 import android.accessibilityservice.AccessibilityService
+import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
-import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.*
 
 class VolumeButtonAccessibilityService : AccessibilityService() {
 
     private var volumeUpPressed = false
     private var volumeDownPressed = false
-    private var pressStartTime: Long = 0L
+    private var checkJob: Job? = null
     private val triggerDuration = 5000L // 5 seconds
 
-    private var checkJob: Job? = null
-
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // Empty method
+        // Not used
     }
 
     override fun onInterrupt() {
@@ -29,45 +22,48 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        Log.d("VolumeButtonService", "Key event detected: ${event.keyCode}, Action: ${event.action}")
+        Log.d("VolumeButtonService", "Key event: ${event.keyCode}, Action: ${event.action}")
 
-        when (event.keyCode) {
-            KeyEvent.KEYCODE_VOLUME_UP -> {
-                handleKeyEvent(event, isUp = true)
-                return true
-            }
-            KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                handleKeyEvent(event, isUp = false)
-                return true
-            }
+        return when (event.keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> handleVolumeKey(event, isUp = true)
+            KeyEvent.KEYCODE_VOLUME_DOWN -> handleVolumeKey(event, isUp = false)
+            else -> super.onKeyEvent(event)
         }
-        return super.onKeyEvent(event)
     }
 
-    private fun handleKeyEvent(event: KeyEvent, isUp: Boolean) {
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            if (isUp) volumeUpPressed = true else volumeDownPressed = true
+    private fun handleVolumeKey(event: KeyEvent, isUp: Boolean): Boolean {
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (isUp) volumeUpPressed = true else volumeDownPressed = true
 
-            Log.d("VolumeButtonService", "Volume Up: $volumeUpPressed, Volume Down: $volumeDownPressed")
-
-            if (volumeUpPressed && volumeDownPressed && checkJob == null) {
-                pressStartTime = System.currentTimeMillis()
-                checkJob = CoroutineScope(Dispatchers.Default).launch {
-                    delay(triggerDuration)
-                    if (volumeUpPressed && volumeDownPressed) {
-                        triggerEmergencyAction()
+                // If both buttons pressed, start SOS countdown
+                if (volumeUpPressed && volumeDownPressed && checkJob == null) {
+                    checkJob = CoroutineScope(Dispatchers.Default).launch {
+                        delay(triggerDuration)
+                        if (volumeUpPressed && volumeDownPressed) {
+                            triggerEmergencyAction()
+                        }
                     }
                 }
             }
-        } else if (event.action == KeyEvent.ACTION_UP) {
-            if (isUp) volumeUpPressed = false else volumeDownPressed = false
-            checkJob?.cancel()
-            checkJob = null
+
+            KeyEvent.ACTION_UP -> {
+                if (isUp) volumeUpPressed = false else volumeDownPressed = false
+                // Cancel SOS if buttons released before time
+                checkJob?.cancel()
+                checkJob = null
+            }
         }
+
+        // ✅ Let the system handle normal volume changes unless *both* buttons are held
+        // Returning false means "don’t consume" → volume can change
+        // We only return true if both are still pressed to suppress further events once SOS triggers
+        return volumeUpPressed && volumeDownPressed
     }
 
     private fun triggerEmergencyAction() {
-        Log.d("VolumeButtonService", "Emergency action triggered!")
+        Log.d("VolumeButtonService", "🚨 Emergency action triggered!")
+        // Call your helper for SOS (send SMS, call, etc.)
         EmergencyHelper.sendSmsAndCall(applicationContext)
     }
 }
