@@ -33,16 +33,16 @@ In emergency situations, users may not have enough time to unlock their phone an
 ```mermaid
 flowchart TD
     A[App Launched]
-    B[User Saves Emergency Contacts]
-    C[App Runs in Background]
-    D[Hardware Button Gesture Detected]
-    E[Emergency Mode Activated]
-    F[Foreground Location Service Started]
-    G[Live Location Retrieved]
-    H[SMS Sent to Emergency Contacts]
-    I[Emergency Call Initiated]
+    B[Save Contacts]
+    C[App in Background]
+    D[Button Gesture]
+    E[Emergency Mode ON]
+    F[Location Service ON]
+    G[Get Live Location]
+    H[Send SMS to Contacts]
+    I[Start Emergency Call]
 
-    A --> B
+  A --> B
     B --> C
     C --> D
     D --> E
