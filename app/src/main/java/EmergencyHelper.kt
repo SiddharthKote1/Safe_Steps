@@ -10,7 +10,7 @@ import android.telephony.SmsManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.Siddharth.chat.PreferencesHelper
+import PreferencesHelper
 import kotlinx.coroutines.*
 
 object EmergencyHelper {

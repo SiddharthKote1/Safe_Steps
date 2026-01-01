@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.Siddharth.SafeSteps.LocationService
-import com.Siddharth.chat.PreferencesHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -85,8 +84,8 @@ fun LocationPermission(navController: NavController) {
                 .background(
                     brush = Brush.verticalGradient(
                         listOf(
-                        Color(0xFF3A7BD5), // Blue
-                        Color(0xFF00D2FF)) // Light Cya
+                        Color(0xFF3A7BD5),
+                        Color(0xFF00D2FF))
                     )
                 )
         ) {
@@ -97,7 +96,6 @@ fun LocationPermission(navController: NavController) {
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top
             ) {
-               // Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = "Enable location Service",
@@ -115,7 +113,6 @@ fun LocationPermission(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Button to show confirmation dialog
                 Row(modifier=Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center) {
                     Button(
@@ -158,7 +155,6 @@ fun LocationPermission(navController: NavController) {
                     }
                 }
 
-                // Confirmation Dialog
                 if (showDialog) {
                     androidx.compose.material3.AlertDialog(
                         onDismissRequest = { showDialog = false },

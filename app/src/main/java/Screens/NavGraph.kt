@@ -6,6 +6,7 @@ import Screens.PermissionScreen
 import Screens.MainScreen
 import Screens.NeeScreen
 import LocationPermission
+import PreferencesHelper
 import android.app.Activity
 import android.net.Uri
 import androidx.compose.runtime.Composable
@@ -46,17 +47,15 @@ fun NavGraph(modifier: Modifier = Modifier) {
         navController = navController,
         startDestination = startDestination
     ) {
-        // Intro Screen
         composable(Routes.INTRO_SCREEN) {
             IntroScreen(navController = navController)
         }
 
-        // Permission Screen
+
         composable(Routes.PERMISSION_SCREEN) {
             PermissionScreen(navController = navController)
         }
 
-        // Location Permission Screen
         composable(Routes.LOCATION_SCREEN) {
             LocationPermission(navController = navController)
         }
@@ -69,7 +68,6 @@ fun NavGraph(modifier: Modifier = Modifier) {
             MainScreen(navController = navController)
         }
 
-        // NeeScreen with arguments
         composable(
             route = "NeeScreen/{name}/{countryCode1}/{countryCode2}/{phoneNumber1}/{phoneNumber2}",
             arguments = listOf(

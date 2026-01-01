@@ -26,7 +26,7 @@
         android:theme="@style/Theme.MySplashScreen"
         tools:targetApi="34">
 
-        <!-- Main Activity -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -36,7 +36,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Accessibility Service -->
         <service
             android:name=".VolumeButtonAccessibilityService"
             android:exported="false"
@@ -49,7 +48,6 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- Location Foreground Service -->
         <service
             android:name=".LocationService"
             android:enabled="true"

@@ -1,5 +1,3 @@
-package com.Siddharth.chat
-
 import android.content.Context
 import android.content.SharedPreferences
 
@@ -8,7 +6,6 @@ class PreferencesHelper(context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
 
-    // Keys for storing user data
     private val KEY_NAME = "name"
     private val KEY_AGE = "age"
     private val KEY_DOB = "dob"
@@ -17,7 +14,6 @@ class PreferencesHelper(context: Context) {
     private val KEY_COUNTRY_CODE1 = "country_code1"
     private val KEY_COUNTRY_CODE2 = "country_code2"
 
-    // Save user data into SharedPreferences
     fun saveUserData(name: String, age: String, dob: String, phone1: String, phone2: String, countryCode1: String, countryCode2: String) {
         val editor = sharedPreferences.edit()
         editor.putString(KEY_NAME, name)
@@ -40,7 +36,7 @@ class PreferencesHelper(context: Context) {
         return sharedPreferences.getBoolean(KEY_SETUP_DONE, false)
     }
 
-    // Retrieve saved user data from SharedPreferences
+
     fun getUserData(): User? {
         val name = sharedPreferences.getString(KEY_NAME, null)
         val age = sharedPreferences.getString(KEY_AGE, null)
@@ -57,7 +53,6 @@ class PreferencesHelper(context: Context) {
         }
     }
 
-    // Clear the saved data (for example, if user logs out)
     fun clearUserData() {
         val editor = sharedPreferences.edit()
         editor.clear()
@@ -65,7 +60,6 @@ class PreferencesHelper(context: Context) {
     }
 }
 
-// Data class to hold user information
 data class User(
     val name: String,
     val age: String,

@@ -35,7 +35,7 @@ import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.Siddharth.SafeSteps.R
-import com.Siddharth.chat.PreferencesHelper
+import PreferencesHelper
 
 
 @Composable
@@ -72,6 +72,7 @@ fun IntroScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LottieAnimation(
+
                 composition = composition,
                 progress = progress,
                 modifier = Modifier

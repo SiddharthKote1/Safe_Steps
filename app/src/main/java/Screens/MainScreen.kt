@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.Siddharth.chat.PreferencesHelper
+import PreferencesHelper
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,8 +123,8 @@ fun MainScreen(
                         colors = TextFieldDefaults.colors(
                             disabledTextColor = Color.Black,
                             disabledLabelColor = Color.Gray,
-                            disabledContainerColor = Color.Transparent, // keeps it like normal
-                            disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                            disabledContainerColor = Color.Transparent,
+                            disabledIndicatorColor = Color.DarkGray,
                             disabledPlaceholderColor = Color.Gray,
                             disabledLeadingIconColor = Color.Gray,
                             disabledTrailingIconColor = Color.Gray
@@ -145,8 +145,8 @@ fun MainScreen(
                         colors = TextFieldDefaults.colors(
                             disabledTextColor = Color.Black,
                             disabledLabelColor = Color.Gray,
-                            disabledContainerColor = Color.Transparent, // keeps it like normal
-                            disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                            disabledContainerColor = Color.Transparent,
+                            disabledIndicatorColor = Color.DarkGray,
                             disabledPlaceholderColor = Color.Gray,
                             disabledLeadingIconColor = Color.Gray,
                             disabledTrailingIconColor = Color.Gray
@@ -166,14 +166,14 @@ fun MainScreen(
                             enabled = false,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { datePicker.show() }, // 👈 put clickable here
+                                .clickable { datePicker.show() },
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
                             colors = TextFieldDefaults.colors(
                                 disabledTextColor = Color.Black,
                                 disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent, // keeps it like normal
-                                disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                                disabledContainerColor = Color.Transparent,
+                                disabledIndicatorColor = Color.DarkGray,
                                 disabledPlaceholderColor = Color.Gray,
                                 disabledLeadingIconColor = Color.Gray,
                                 disabledTrailingIconColor = Color.Gray
@@ -201,8 +201,8 @@ fun MainScreen(
                             colors = TextFieldDefaults.colors(
                                 disabledTextColor = Color.Black,
                                 disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent, // keeps it like normal
-                                disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                                disabledContainerColor = Color.Transparent,
+                                disabledIndicatorColor = Color.DarkGray,
                                 disabledPlaceholderColor = Color.Gray,
                                 disabledLeadingIconColor = Color.Gray,
                                 disabledTrailingIconColor = Color.Gray
@@ -223,8 +223,8 @@ fun MainScreen(
                             colors = TextFieldDefaults.colors(
                                 disabledTextColor = Color.Black,
                                 disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent, // keeps it like normal
-                                disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                                disabledContainerColor = Color.Transparent,
+                                disabledIndicatorColor = Color.DarkGray,
                                 disabledPlaceholderColor = Color.Gray,
                                 disabledLeadingIconColor = Color.Gray,
                                 disabledTrailingIconColor = Color.Gray
@@ -252,8 +252,8 @@ fun MainScreen(
                             colors = TextFieldDefaults.colors(
                                 disabledTextColor = Color.Black,
                                 disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent, // keeps it like normal
-                                disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                                disabledContainerColor = Color.Transparent,
+                                disabledIndicatorColor = Color.DarkGray,
                                 disabledPlaceholderColor = Color.Gray,
                                 disabledLeadingIconColor = Color.Gray,
                                 disabledTrailingIconColor = Color.Gray
@@ -275,8 +275,8 @@ fun MainScreen(
                             colors = TextFieldDefaults.colors(
                                 disabledTextColor = Color.Black,
                                 disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent, // keeps it like normal
-                                disabledIndicatorColor = Color.DarkGray,    // border color when disabled
+                                disabledContainerColor = Color.Transparent,
+                                disabledIndicatorColor = Color.DarkGray,
                                 disabledPlaceholderColor = Color.Gray,
                                 disabledLeadingIconColor = Color.Gray,
                                 disabledTrailingIconColor = Color.Gray
@@ -306,7 +306,7 @@ fun MainScreen(
                                     popUpTo("MainScreen") { inclusive = true }
                                 }
                             },
-                            enabled = filled, // ✅ prevent navigation if fields are incomplete
+                            enabled = filled,
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .padding(horizontal = 32.dp),

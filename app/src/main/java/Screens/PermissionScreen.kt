@@ -6,10 +6,10 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,11 +22,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.Siddharth.chat.PreferencesHelper
+import PreferencesHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+@RequiresApi(Build.VERSION_CODES.CUPCAKE)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PermissionScreen(navController: NavController) {
@@ -44,8 +45,7 @@ fun PermissionScreen(navController: NavController) {
         }
     }
 
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
     val permissionsState = rememberMultiplePermissionsState(
         permissions = buildList {
@@ -116,7 +116,7 @@ fun PermissionScreen(navController: NavController) {
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = "1.Enable Accessibility Service",
+                    text = "1. Enable Accessibility Service",
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color(0xFFFFF176)
                 )
@@ -134,7 +134,7 @@ fun PermissionScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
-                        onClick = { showBottomSheet = true },
+                        onClick = { showDialog = true },
                         modifier = Modifier
                             .padding(horizontal = 24.dp)
                             .defaultMinSize(minHeight = ButtonDefaults.MinHeight),
@@ -149,7 +149,6 @@ fun PermissionScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Step 2: Permissions
                 Text(
                     text = "2. Allow App Permissions",
                     style = MaterialTheme.typography.headlineSmall,
@@ -194,7 +193,6 @@ fun PermissionScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Continue button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -222,88 +220,66 @@ fun PermissionScreen(navController: NavController) {
                 }
             }
 
-            // Bottom Sheet
-            if (showBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showBottomSheet = false },
-                    sheetState = bottomSheetState,
-                    containerColor = Color(0xFFEEF6FF)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth() // Don't fill full height
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(
-                            "Why Accessibility Is Needed",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color(0xFF0052D4)
-                        )
-                        Text(
-                            "The Accessibility Service allows SafeSteps to detect SOS triggers, send emergency SMS, and make calls automatically. Please enable it by following these steps:",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.DarkGray
-                        )
+            if (showDialog) {
+                var isChecked by remember { mutableStateOf(false) }
 
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Steps to Enable:",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color(0xFF0052D4)
-                        )
-                        Text(
-                            "1. Tap Open Settings below.\n" +
-                                    "2. Find SafeSteps in the list of services.\n" +
-                                    "3. Tap on SafeSteps.\n" +
-                                    "4. Toggle the switch to ON.\n" +
-                                    "5. Confirm any pop-ups asking for permission.\n" +
-                                    "6. Return to this screen and tap Continue.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.DarkGray
-                        )
-
-                        // ✅ Buttons right under the instructions
-                        Spacer(modifier = Modifier.height(20.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                AlertDialog(
+                    onDismissRequest = {},
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                context.startActivity(intent)
+                                showDialog = false
+                            },
+                            enabled = isChecked
                         ) {
-                            Button(
-                                onClick = { showBottomSheet = false },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFD3D3D3),
-                                    contentColor = Color.DarkGray
-                                )
-                            ) {
-                                Text("Cancel")
-                            }
+                            Text("Open Settings")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancel")
+                        }
+                    },
+                    title = { Text("Emergency SOS Access",
+                        style= MaterialTheme.typography.headlineSmall) },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                            Button(
-                                onClick = {
-                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                    context.startActivity(intent)
-                                    showBottomSheet = false
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFC0CF69),
-                                    contentColor = Color.DarkGray
+                            Text(
+                                "To keep you safe, this feature uses Accessibility Service to detect when you press both volume buttons together. " +
+                                        "That action will instantly trigger an SOS alert — sharing your live location with your emergency contacts and sending help messages automatically."
+                            )
+
+                            Text(
+                                "To turn this on:\n" +
+                                        "1. Tap 'Open Settings' below.\n" +
+                                        "2. Find \"SafeSteps\" in the list.\n" +
+                                        "3. Turn the switch ON.\n" +
+                                        "4. Confirm any prompts.\n" +
+                                        "5. Come back here and tap Continue."
+                            )
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = isChecked,
+                                    onCheckedChange = { isChecked = it }
                                 )
-                            ) {
-                                Text("Open Settings")
+                                Text(
+                                    "I agree to enable SOS detection via Accessibility Service."
+                                )
                             }
                         }
-                    }
-                }
+                    },
+                    containerColor = Color.White
+                )
             }
         }
     }
 }
 
-
+@RequiresApi(Build.VERSION_CODES.CUPCAKE)
 fun isAccessibilityEnabled(context: Context): Boolean {
     val enabledServices = Settings.Secure.getString(
         context.contentResolver,
