@@ -21,12 +21,24 @@ In emergency situations, accessing the phone and manually contacting someone may
 ## 🔄 App Flow Diagram
 ```mermaid
 flowchart TD
-    A[App Launched] --> B[User Registers Emergency Contacts]
-    B --> C[App Runs in Background]
-    C --> D[Hardware Button Gesture Detected]
-    D --> E[Emergency Mode Activated]
-    E --> F[Foreground Location Service Started]
-    F --> G[Live Location Fetched]
-    G --> H[SMS Sent to Emergency Contacts]
-    H --> I[Emergency Call Initiated]
+    flowchart TD
+    A[App Launched]
+    B[Add Emergency Contacts]
+    C[App Runs in Background]
+    D[Hardware Button Gesture Detected]
+    E[Emergency Mode Activated]
+    F[Foreground Location Service Started]
+    G[Live Location Fetched]
+    H[SMS Sent to Emergency Contacts]
+    I[Emergency Call Initiated]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+
 
