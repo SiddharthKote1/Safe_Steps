@@ -7,8 +7,6 @@ import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +22,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.Siddharth.SafeSteps.R
 import com.Siddharth.SafeSteps.EmergencyHelper
 import PreferencesHelper
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -126,7 +125,11 @@ fun NeeScreen(
 
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.Menu, contentDescription = null, tint = Color.White)
+                            Icon(
+                                painter = painterResource(id = R.drawable.menubar),
+                                contentDescription = null,
+                                tint = Color.White
+                            )
                         }
 
                         DropdownMenu(
@@ -134,26 +137,12 @@ fun NeeScreen(
                             onDismissRequest = { menuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Edit Profile") },
-                                onClick = {
-                                    menuExpanded = false
-                                    navController.navigate(Routes.MAIN_SCREEN)
-                                }
-                            )
-                            DropdownMenuItem(
                                 text = { Text("Settings") },
                                 onClick = {
                                     menuExpanded = false
                                     context.startActivity(
                                         Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                     )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Help") },
-                                onClick = {
-                                    menuExpanded = false
-                                    navController.navigate(Routes.HELP_SCREEN)
                                 }
                             )
                         }

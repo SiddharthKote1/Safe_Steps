@@ -1,6 +1,10 @@
+package com.Siddharth.SafeSteps
+
+import Screens.BottomBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,63 +21,126 @@ import androidx.navigation.NavController
 
 @Composable
 fun HelpScreen(navController: NavController) {
-    val scrollState = rememberScrollState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF3A7BD5), Color(0xFF00D2FF))
-                )
-            )
-    ) {
-        Column(
+    Scaffold(
+        bottomBar = {
+            BottomBar(navController = navController)
+        }
+    ) { paddingValues ->
+
+        Box(
             modifier = Modifier
+                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(24.dp,top=50.dp,end=24.dp)
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.Start
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFF3A7BD5), Color(0xFF00D2FF))
+                    )
+                )
         ) {
-            Text(
-                text = "Help & How to Use SafeSteps",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFFFFF176),
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 48.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+
+                Text(
+                    text = "Help & Usage Guide",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                Text(
+                    text = "Learn how to use SafeSteps effectively",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+                )
+
+                HelpSection(
+                    title = "Permissions Required",
+                    points = listOf(
+                        "Allow Phone & SMS permissions to send alerts.",
+                        "Enable Location access (Fine & Coarse).",
+                        "Turn on Accessibility Service for emergency detection."
+                    )
+                )
+
+                HelpSection(
+                    title = "Emergency Contacts",
+                    points = listOf(
+                        "Add at least one emergency contact.",
+                        "Two contacts are recommended for reliability.",
+                        "Ensure contacts can receive calls & SMS."
+                    )
+                )
+
+                HelpSection(
+                    title = "Sending an Emergency Alert",
+                    points = listOf(
+                        "Press and hold Volume Up + Volume Down for 5 seconds.",
+                        "App will automatically place a call.",
+                        "Location link is sent via SMS."
+                    )
+                )
+
+                HelpSection(
+                    title = "Location Updates",
+                    points = listOf(
+                        "Location updates run in background.",
+                        "Keep GPS enabled for accuracy."
+                    )
+                )
+
+                HelpSection(
+                    title = "Tips for Reliable Usage",
+                    points = listOf(
+                        "Disable battery optimization for SafeSteps.",
+                        "Keep Accessibility Service always enabled.",
+                        "Test alerts with trusted contacts."
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun HelpSection(
+    title: String,
+    points: List<String>
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
 
             Text(
-                text = """
-                    1. Permissions  
-                    - Allow Phone and SMS permissions so the app can place a call and send a text in an emergency.  
-                    - Allow Location (Coarse and Fine) so your GPS position can be shared.  
-                    - Turn on Accessibility Service so the app can detect the emergency button press.  
-
-                    2. Set Emergency Contacts  
-                    - Open the Emergency Contacts section in the app.  
-                    - Add at least one mobile number. Two contacts are recommended.  
-                    - Make sure these contacts can receive calls and texts.  
-
-                    3. Sending an Emergency Alert  
-                    - If you are in danger or need help, press and hold the Volume Up and Volume Down buttons together for about five seconds.  
-                    - The app will automatically call your first saved contact and send a text with your current location to both contacts.  
-
-                    4. Location Updates  
-                    - SafeSteps updates your location periodically in the background.  
-                    - Keep your phone’s location services turned on for accurate updates.  
-
-                    5. Tips for Reliable Use  
-                    - Keep Accessibility Service enabled at all times.  
-                    - Turn off battery optimization for SafeSteps so it isn’t stopped in the background.  
-                    - Test the alert feature with a trusted contact to confirm everything works.
-                """.trimIndent(),
-                fontSize = 16.sp,
-                color = Color.White,
-                textAlign = TextAlign.Justify,
-                modifier = Modifier.padding(bottom = 16.dp)
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            points.forEach {
+                Text(
+                    text = "• $it",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
         }
     }
 }
@@ -87,4 +154,3 @@ fun HelpScreenPreview() {
         }
     }
 }
-

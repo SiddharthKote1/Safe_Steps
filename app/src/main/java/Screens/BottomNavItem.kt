@@ -11,7 +11,24 @@ sealed class BottomNavItem(
     val icon: ImageVector,
     val label: String
 ) {
-    object Home : BottomNavItem("home", Icons.Default.Home, "Home")
-    object Edit : BottomNavItem("edit", Icons.Default.Edit, "Edit")
-    object Info : BottomNavItem("info", Icons.Default.Info, "Info")
+    // Home → NeeScreen (parameterized, handled specially)
+    object Home : BottomNavItem(
+        route = "NeeScreen",
+        icon = Icons.Default.Home,
+        label = "Home"
+    )
+
+    // Edit → MainScreen
+    object Edit : BottomNavItem(
+        route = Routes.MAIN_SCREEN,
+        icon = Icons.Default.Edit,
+        label = "Edit"
+    )
+
+    // Info → HelpScreen
+    object Info : BottomNavItem(
+        route = Routes.HELP_SCREEN,
+        icon = Icons.Default.Info,
+        label = "Info"
+    )
 }
