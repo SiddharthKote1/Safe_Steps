@@ -127,11 +127,11 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 📸 App Screenshots
 
 <p align="center">
-  <img src="screenshots/Splashscreen.png" width="18%" />
-  <img src="screenshots/StartingScreen.png" width="18%" />
-  <img src="screenshots/PermissionScreen.png" width="18%" />
-  <img src="screenshots/DetailScreen.png" width="18%" />
-  <img src="screenshots/MainScreen.png" width="18%" />
+  <img src="./Splashscreen.png" width="18%" />
+  <img src="./StartingScreen.png" width="18%" />
+  <img src="./PermissionScreen.png" width="18%" />
+  <img src="./DetailScreen.png" width="18%" />
+  <img src="./MainScreen.png" width="18%" />
 </p>
 
 ## 👨‍💻 Developed By
