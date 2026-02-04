@@ -123,7 +123,7 @@ SafeSteps uses the following permissions **only during emergencies**:
 
 ## 📂 Project Structure
 
-
+https://github.com/SiddharthKote1/Safe_Steps/blob/02afb689c08ca0728e47120ae4c553ee519bd2e5/Splashscreen.png
 
 ## 👨‍💻 Developed By
 
