@@ -42,6 +42,23 @@ SafeSteps solves this problem by enabling **multiple emergency actions with a si
 
 ---
 
+## 📸 App Screenshots
+
+<p align="center">
+  <img src="./Splashscreen.png" width="22%" />
+  <img src="./StartingScreen.png" width="22%" />
+  <img src="./PermissionScreen.png" width="22%" />
+</p>
+
+<p align="center">
+  <img src="./DetailScreen.png" width="22%" />
+  <img src="./MainScreen.png" width="22%" />
+</p>
+
+<p align="center"><i>Core screens of the SafeSteps emergency flow</i></p>
+
+---
+
 ## 📱 How It Works 🧭
 
 1️⃣ User adds trusted emergency contacts  
@@ -122,18 +139,6 @@ SafeSteps uses the following permissions **only during emergencies**:
 
 ---
 
-## 📂 Project Structure
-
-## 📸 App Screenshots
-
-<p align="center">
-  <img src="./Splashscreen.png" width="18%" />
-  <img src="./StartingScreen.png" width="18%" />
-  <img src="./PermissionScreen.png" width="18%" />
-  <img src="./DetailScreen.png" width="18%" />
-  <img src="./MainScreen.png" width="18%" />
-</p>
-
 ## 👨‍💻 Developed By
 
 **Siddharth Kote**  
@@ -147,4 +152,5 @@ Android Developer | Digital Safety Builder
 <p align="center">
   ❤️ Built to protect. Built with purpose. ❤️
 </p>
+
 
