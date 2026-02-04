@@ -127,7 +127,7 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 📸 App Screenshots
 
 <p align="center">
-  ![image alt](https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/Splashscreen.png)
+  ![image alt](Splashscreen.png)
    ![image alt](https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/StartingScreen.png)
    ![image alt](https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/PermissionScreen.png)
    ![image alt](https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/DetailScreen.png)
