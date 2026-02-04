@@ -36,9 +36,10 @@ SafeSteps solves this problem by enabling **multiple emergency actions with a si
 - 📍 **Live location sharing**
 - ⚡ Lightweight, fast, and reliable
 
----
+<!-- 🔔 Safety Flow Animation -->
+<img width="100%" src="https://media.tenor.com/bGxak.gif" />
 
-<img src="https://capsule-render.vercel.app/api?type=rect&height=4&color=gradient" />
+---
 
 ## 📱 How It Works 🧭
 
@@ -55,25 +56,25 @@ SafeSteps solves this problem by enabling **multiple emergency actions with a si
 
 ## 🧠 Design Decisions
 
-- **Jetpack Compose** used for modern, reactive UI
+- **Jetpack Compose** for modern, reactive UI
 - **MVVM architecture** for clean separation of concerns
-- Emergency actions designed to require **minimal user input**
-- Permissions are requested **only when required**
-- Focused on **system-level reliability** over visual complexity
+- Emergency actions require **minimal user interaction**
+- Permissions requested **only when required**
+- Focus on **system-level reliability**
 
 ---
 
 ## 🛠️ Tech Stack 🧩
 
 **Android**
-- Kotlin
-- Jetpack Compose
-- MVVM Architecture
+- Kotlin  
+- Jetpack Compose  
+- MVVM Architecture  
 
 **System & APIs**
-- SMS Manager
-- Phone Call Intents
-- Location Services
+- SMS Manager  
+- Phone Call Intents  
+- Location Services  
 
 ---
 
@@ -88,25 +89,25 @@ SafeSteps uses the following permissions **only during emergencies**:
 - `ACCESS_FINE_LOCATION`
 - `ACCESS_COARSE_LOCATION`
 
-⚠️ No background misuse. Privacy-first approach.
+⚠️ Privacy-first. No background misuse.
 
 ---
 
 ## 🔒 Privacy & Security
 
-- No personal data is stored on external servers
+- No personal data stored on external servers
 - No background tracking
-- Location is accessed **only during emergency triggers**
-- Emergency contacts are stored locally on the device
-- App respects user consent at all times
+- Location accessed **only during emergency triggers**
+- Emergency contacts stored locally on device
+- Full user consent respected
 
 ---
 
 ## ⚠️ Known Limitations
 
-- Requires an active network for SMS delivery
-- Emergency calls depend on device signal strength
-- SMS and call features require a **physical Android device**
+- Requires active network for SMS delivery
+- Emergency calls depend on device signal
+- SMS & call features require a **physical Android device**
 - Location accuracy depends on GPS availability
 
 ---
@@ -114,9 +115,9 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 🧪 Testing
 
 - Tested on real Android devices
-- Verified SMS and call triggers manually
+- SMS & call triggers verified manually
 - UI tested on multiple screen sizes
-- Emergency flow tested under low-interaction scenarios
+- Emergency flows tested under low-interaction scenarios
 
 ---
 
