@@ -5,7 +5,7 @@
   <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=18&pause=1000&color=FF4C4C&center=true&vCenter=true&width=650&lines=Your+Safety+Matters;One+Tap+Emergency+Assistance;Built+for+Real+World+Situations" />
 </p>
 
-<!-- 🎥 Hero Animation -->
+<!-- 🎥 Top Hero Animation -->
 <img width="100%" src="https://media.tenor.com/bCNex.gif" />
 
 ---
@@ -36,8 +36,8 @@ SafeSteps solves this problem by enabling **multiple emergency actions with a si
 - 📍 **Live location sharing**
 - ⚡ Lightweight, fast, and reliable
 
-<!-- 🔔 Safety Flow Animation -->
-<img width="100%" src="https://media.tenor.com/bGxak.gif" />
+<!-- 🔔 Safety / Flow Animation -->
+<img width="100%" src="https://media.tenor.com/22491254.gif" />
 
 ---
 
@@ -89,7 +89,7 @@ SafeSteps uses the following permissions **only during emergencies**:
 - `ACCESS_FINE_LOCATION`
 - `ACCESS_COARSE_LOCATION`
 
-⚠️ Privacy-first. No background misuse.
+⚠️ Privacy-first approach. No background misuse.
 
 ---
 
@@ -98,15 +98,15 @@ SafeSteps uses the following permissions **only during emergencies**:
 - No personal data stored on external servers
 - No background tracking
 - Location accessed **only during emergency triggers**
-- Emergency contacts stored locally on device
-- Full user consent respected
+- Emergency contacts stored locally on the device
+- User consent respected at all times
 
 ---
 
 ## ⚠️ Known Limitations
 
 - Requires active network for SMS delivery
-- Emergency calls depend on device signal
+- Emergency calls depend on device signal strength
 - SMS & call features require a **physical Android device**
 - Location accuracy depends on GPS availability
 
@@ -115,7 +115,7 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 🧪 Testing
 
 - Tested on real Android devices
-- SMS & call triggers verified manually
+- SMS and call triggers verified manually
 - UI tested on multiple screen sizes
 - Emergency flows tested under low-interaction scenarios
 
