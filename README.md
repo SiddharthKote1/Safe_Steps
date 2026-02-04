@@ -1,3 +1,4 @@
+
 <!-- 🔥 Project Title -->
 <h1 align="center">🚨 SafeSteps – Women Safety App</h1>
 
@@ -124,6 +125,7 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 📂 Project Structure
 
 https://github.com/SiddharthKote1/Safe_Steps/blob/02afb689c08ca0728e47120ae4c553ee519bd2e5/Splashscreen.png
+https://github.com/SiddharthKote1/Safe_Steps/blob/8fcae7eb5f98f9b9d3223c3a9bec4eca7adf2287/StartingScreen.png
 
 ## 👨‍💻 Developed By
 
