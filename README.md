@@ -2,10 +2,10 @@
 <h1 align="center">🚨 SafeSteps – Women Safety App</h1>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=18&pause=1000&color=FF4C4C&center=true&vCenter=true&width=600&lines=Your+Safety+Matters;One+Tap+Can+Save+a+Life;Built+for+Real+Emergency+Situations" />
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=18&pause=1000&color=FF4C4C&center=true&vCenter=true&width=650&lines=Your+Safety+Matters;One+Tap+Emergency+Assistance;Built+for+Real+World+Situations" />
 </p>
 
-<!-- 🎥 Hero GIF -->
+<!-- 🎥 Hero Animation -->
 <img width="100%" src="https://media.tenor.com/bCNex.gif" />
 
 ---
@@ -15,19 +15,26 @@
 ## 💡 About SafeSteps
 
 **SafeSteps** is a women safety Android application designed to provide **instant help during emergencies**.  
-With just **one tap**, users can alert trusted contacts, share their location, and make emergency calls.
+With just **one tap**, users can alert trusted contacts, share their live location, and initiate emergency calls.
 
-🚨 Built for **speed**, **reliability**, and **real-world safety**.
+🚨 The app focuses on **speed, reliability, and minimal interaction** during critical moments.
+
+---
+
+## 🎯 Problem Statement
+
+In emergency situations, victims often **do not have enough time** to unlock their phone, search contacts, or make calls.  
+SafeSteps solves this problem by enabling **multiple emergency actions with a single tap**, reducing response time when it matters most.
 
 ---
 
 ## ✨ Key Features ⚡
 
 - 🚨 **One-Tap SOS Trigger**
-- 📩 **Automatic SMS alerts** to trusted contacts
+- 📩 **Automatic SMS alerts** sent to trusted contacts
 - 📞 **Instant emergency calling**
 - 📍 **Live location sharing**
-- ⚡ Lightweight & fast response
+- ⚡ Lightweight, fast, and reliable
 
 ---
 
@@ -35,23 +42,37 @@ With just **one tap**, users can alert trusted contacts, share their location, a
 
 ## 📱 How It Works 🧭
 
-1️⃣ Add emergency contacts  
-2️⃣ Tap the **SOS button** in danger  
+1️⃣ User adds trusted emergency contacts  
+2️⃣ In danger, user taps the **SOS button**  
 3️⃣ App instantly:
 - Sends SMS alerts
-- Makes emergency calls
+- Initiates emergency calls
 - Shares live location
 
 ⏱️ Designed to work in **seconds**, not minutes.
 
 ---
 
+## 🧠 Design Decisions
+
+- **Jetpack Compose** used for modern, reactive UI
+- **MVVM architecture** for clean separation of concerns
+- Emergency actions designed to require **minimal user input**
+- Permissions are requested **only when required**
+- Focused on **system-level reliability** over visual complexity
+
+---
+
 ## 🛠️ Tech Stack 🧩
 
-- **Kotlin**
-- **Jetpack Compose**
-- **MVVM Architecture**
-- Android SMS & Call APIs
+**Android**
+- Kotlin
+- Jetpack Compose
+- MVVM Architecture
+
+**System & APIs**
+- SMS Manager
+- Phone Call Intents
 - Location Services
 
 ---
@@ -60,25 +81,48 @@ With just **one tap**, users can alert trusted contacts, share their location, a
 
 ## 🔐 Permissions Used 🔒
 
-SafeSteps uses permissions **only during emergencies**:
+SafeSteps uses the following permissions **only during emergencies**:
 
 - `SEND_SMS`
 - `CALL_PHONE`
 - `ACCESS_FINE_LOCATION`
 - `ACCESS_COARSE_LOCATION`
 
-⚠️ No background misuse. Privacy first.
+⚠️ No background misuse. Privacy-first approach.
 
 ---
 
-## 🚀 Future Enhancements 🌱
+## 🔒 Privacy & Security
 
-- 🔊 SOS alarm sound
-- ⌚ Wear OS support
-- ☁️ Cloud backup for contacts
-- 📊 Emergency activity logs
+- No personal data is stored on external servers
+- No background tracking
+- Location is accessed **only during emergency triggers**
+- Emergency contacts are stored locally on the device
+- App respects user consent at all times
 
 ---
+
+## ⚠️ Known Limitations
+
+- Requires an active network for SMS delivery
+- Emergency calls depend on device signal strength
+- SMS and call features require a **physical Android device**
+- Location accuracy depends on GPS availability
+
+---
+
+## 🧪 Testing
+
+- Tested on real Android devices
+- Verified SMS and call triggers manually
+- UI tested on multiple screen sizes
+- Emergency flow tested under low-interaction scenarios
+
+---
+
+## 📂 Project Structure
+
+
 
 ## 👨‍💻 Developed By
 
