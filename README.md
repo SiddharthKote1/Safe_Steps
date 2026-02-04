@@ -127,11 +127,11 @@ SafeSteps uses the following permissions **only during emergencies**:
 ## 📸 App Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/main/Splashscreen.png" width="18%" />
-  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/main/StartingScreen.png" width="18%" />
-  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/main/PermissionScreen.png" width="18%" />
-  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/main/DetailScreen.png" width="18%" />
-  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/main/MainScreen.png" width="18%" />
+  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/Splashscreen.png" width="18%" />
+  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/StartingScreen.png" width="18%" />
+  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/PermissionScreen.png" width="18%" />
+  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/DetailScreen.png" width="18%" />
+  <img src="https://raw.githubusercontent.com/SiddharthKote1/Safe_Steps/safesteps/screenshots/MainScreen.png" width="18%" />
 </p>
 
 ## 👨‍💻 Developed By
