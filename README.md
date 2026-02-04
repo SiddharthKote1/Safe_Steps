@@ -128,6 +128,7 @@ https://github.com/SiddharthKote1/Safe_Steps/blob/02afb689c08ca0728e47120ae4c553
 https://github.com/SiddharthKote1/Safe_Steps/blob/8fcae7eb5f98f9b9d3223c3a9bec4eca7adf2287/StartingScreen.png
 https://github.com/SiddharthKote1/Safe_Steps/blob/b756ac2cc0a48d87e0ed8abec7786fbb16e12474/PermissionScreen.png
 https://github.com/SiddharthKote1/Safe_Steps/blob/c67b8a56f3648cede2321932387aa967baf59c6a/DetailScreen.png
+https://github.com/SiddharthKote1/Safe_Steps/blob/74eec856caab313f46e8631ff6fd5d7c57fea12e/MainScreen.png
 
 ## 👨‍💻 Developed By
 
