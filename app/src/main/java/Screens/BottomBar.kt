@@ -1,6 +1,6 @@
 package Screens
 
-import PreferencesHelper
+import com.Siddharth.SafeSteps.PreferencesHelper
 import android.net.Uri
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme

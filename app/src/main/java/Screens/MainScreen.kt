@@ -1,375 +1,384 @@
 package Screens
 
-import android.app.DatePickerDialog
+import com.Siddharth.SafeSteps.PreferencesHelper
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import PreferencesHelper
 import java.util.*
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavController,
-    innerPadding: PaddingValues = PaddingValues()
+    navController: NavController
 ) {
+
     val context = LocalContext.current
     val preferencesHelper = PreferencesHelper(context)
+    val coroutineScope = rememberCoroutineScope()
 
-    var countryCode1 by remember { mutableStateOf("+91") }
-    var phoneNumber1 by remember { mutableStateOf("") }
-    var countryCode2 by remember { mutableStateOf("+91") }
-    var phoneNumber2 by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
+    var ownPhoneNumber by remember { mutableStateOf("") }
+    var ownCountryCode by remember { mutableStateOf("+91") }
+
+    var phoneNumber1 by remember { mutableStateOf("") }
+    var phoneNumber2 by remember { mutableStateOf("") }
+
+    var countryCode1 by remember { mutableStateOf("+91") }
+    var countryCode2 by remember { mutableStateOf("+91") }
+
+    var isLoading by remember { mutableStateOf(false) }
 
     val calendar = Calendar.getInstance()
-    val year = calendar.get(Calendar.YEAR)
-    val month = calendar.get(Calendar.MONTH)
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
 
     LaunchedEffect(Unit) {
         val userData = preferencesHelper.getUserData()
         userData?.let {
             name = it.name
             age = it.age
-            dateOfBirth = it.dob
             phoneNumber1 = it.phone1
             phoneNumber2 = it.phone2
             countryCode1 = it.countryCode1
             countryCode2 = it.countryCode2
         }
+        preferencesHelper.getOwnPhone()?.let { ownPhoneNumber = it }
+        preferencesHelper.getOwnCountryCode()?.let { ownCountryCode = it }
     }
 
-    val datePicker = remember {
-        DatePickerDialog(
-            context,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                dateOfBirth = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).apply {
-            datePicker.maxDate = calendar.timeInMillis
-        }
-    }
+    val isFormValid =
+        name.isNotBlank() &&
+                age.isNotBlank() &&
+                ownPhoneNumber.length == 10 &&
+                phoneNumber1.length == 10 &&
+                phoneNumber2.length == 10 &&
+                !isLoading
 
-    Scaffold(
-        bottomBar = {
-            BottomBar(navController = navController)
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp)
+    ) {
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+
+        Text(
+            text = "Profile Setup",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Text(
+            text = "Tell us about yourself",
+            color = Color.Gray,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Box(
             modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
+                .size(100.dp)
                 .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF3A7BD5),
-                            Color(0xFF00D2FF)
-                        )
-                    )
+                    color = Color(0xFFF2F5FF),
+                    shape = CircleShape
                 )
-                .padding(innerPadding)
-                .systemBarsPadding()
-                .imePadding()
+                .align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Profile Setup",
-                    style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                    modifier = Modifier.padding(bottom = 16.dp)
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = Color(0xFF2563EB),
+                modifier = Modifier.size(50.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Full Name",
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+            },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text("Enter your name")
+            },
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Age",
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        OutlinedTextField(
+            value = age,
+            onValueChange = {
+                if (it.length <= 2 && it.isDigitsOnly()) {
+                    age = it
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text("Enter your age")
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Your Phone Number",
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = ownCountryCode,
+                onValueChange = {
+                    if (it.length <= 5) {
+                        ownCountryCode = it
+                    }
+                },
+                modifier = Modifier.width(90.dp),
+                placeholder = {
+                    Text("+91")
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = ownPhoneNumber,
+                onValueChange = {
+                    if (it.length <= 10 && it.isDigitsOnly()) {
+                        ownPhoneNumber = it
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = null,
+                        tint = Color(0xFF2563EB)
+                    )
+                },
+                placeholder = {
+                    Text("Phone Number")
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone
+                ),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Emergency Contacts",
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            OutlinedTextField(
+                value = countryCode1,
+                onValueChange = {
+                    if (it.length <= 5) {
+                        countryCode1 = it
+                    }
+                },
+                modifier = Modifier.width(90.dp),
+                placeholder = {
+                    Text("+91")
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = phoneNumber1,
+                onValueChange = {
+                    if (it.length <= 10 && it.isDigitsOnly()) {
+                        phoneNumber1 = it
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = null,
+                        tint = Color(0xFF2563EB)
+                    )
+                },
+                placeholder = {
+                    Text("Phone Number")
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone
+                ),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            OutlinedTextField(
+                value = countryCode2,
+                onValueChange = {
+                    if (it.length <= 5) {
+                        countryCode2 = it
+                    }
+                },
+                modifier = Modifier.width(90.dp),
+                placeholder = {
+                    Text("+91")
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedTextField(
+                value = phoneNumber2,
+                onValueChange = {
+                    if (it.length <= 10 && it.isDigitsOnly()) {
+                        phoneNumber2 = it
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = null,
+                        tint = Color(0xFF2563EB)
+                    )
+                },
+                placeholder = {
+                    Text("Phone Number")
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone
+                ),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Button(
+            onClick = {
+
+                preferencesHelper.saveOwnPhone(
+                    ownPhoneNumber,
+                    ownCountryCode
                 )
 
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                preferencesHelper.saveUserData(
+                    name = name,
+                    age = age,
+                    phone1 = phoneNumber1,
+                    phone2 = phoneNumber2,
+                    countryCode1 = countryCode1,
+                    countryCode2 = countryCode2
+                )
+
+                Toast.makeText(
+                    context,
+                    "Profile Saved Successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                navController.navigate(
+                    "NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2"
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            label = {
-                                Text(
-                                    "Name",
-                                    color = Color.Black
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = TextFieldDefaults.colors(
-                                disabledTextColor = Color.Black,
-                                disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent,
-                                disabledIndicatorColor = Color.DarkGray,
-                                disabledPlaceholderColor = Color.Gray,
-                                disabledLeadingIconColor = Color.Gray,
-                                disabledTrailingIconColor = Color.Gray
-                            )
-                        )
-
-                        OutlinedTextField(
-                            value = age,
-                            onValueChange = {
-                                if (it.length <= 2 && it.isDigitsOnly()) age = it
-                            },
-                            label = {
-                                Text(
-                                    "Age",
-                                    color = Color.Black
-                                )
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = TextFieldDefaults.colors(
-                                disabledTextColor = Color.Black,
-                                disabledLabelColor = Color.Gray,
-                                disabledContainerColor = Color.Transparent,
-                                disabledIndicatorColor = Color.DarkGray,
-                                disabledPlaceholderColor = Color.Gray,
-                                disabledLeadingIconColor = Color.Gray,
-                                disabledTrailingIconColor = Color.Gray
-                            )
-
-                        )
-
-
-                        Box(
-                            modifier = Modifier.fillMaxWidth()
-                                .clickable { datePicker.show() }) {
-                            OutlinedTextField(
-                                value = dateOfBirth,
-                                onValueChange = {},
-                                label = {
-                                    Text(
-                                        "Date of Birth",
-                                        color = Color.Black
-                                    )
-                                },
-                                readOnly = true,
-                                enabled = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { datePicker.show() },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.colors(
-                                    disabledTextColor = Color.Black,
-                                    disabledLabelColor = Color.Gray,
-                                    disabledContainerColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.DarkGray,
-                                    disabledPlaceholderColor = Color.Gray,
-                                    disabledLeadingIconColor = Color.Gray,
-                                    disabledTrailingIconColor = Color.Gray
-                                )
-                            )
-                        }
-
-                        Text("Phone Numbers", style = MaterialTheme.typography.bodyMedium)
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = countryCode1,
-                                onValueChange = {
-                                    if (it.length <= 4 && it.all { c -> c.isDigit() || c == '+' }) {
-                                        countryCode1 = it
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        "Code",
-                                        color = Color.Black
-                                    )
-                                },
-                                modifier = Modifier.width(90.dp),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.colors(
-                                    disabledTextColor = Color.Black,
-                                    disabledLabelColor = Color.Gray,
-                                    disabledContainerColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.DarkGray,
-                                    disabledPlaceholderColor = Color.Gray,
-                                    disabledLeadingIconColor = Color.Gray,
-                                    disabledTrailingIconColor = Color.Gray
-                                )
-                            )
-                            OutlinedTextField(
-                                value = phoneNumber1,
-                                onValueChange = {
-                                    if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                                        phoneNumber1 = it
-                                    }
-                                },
-                                label = { Text("Phone Number") },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.colors(
-                                    disabledTextColor = Color.Black,
-                                    disabledLabelColor = Color.Gray,
-                                    disabledContainerColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.DarkGray,
-                                    disabledPlaceholderColor = Color.Gray,
-                                    disabledLeadingIconColor = Color.Gray,
-                                    disabledTrailingIconColor = Color.Gray
-                                )
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = countryCode2,
-                                onValueChange = {
-                                    if (it.length <= 4 && it.all { c -> c.isDigit() || c == '+' }) {
-                                        countryCode2 = it
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        "Code",
-                                        color = Color.Black
-                                    )
-                                },
-                                modifier = Modifier.width(90.dp),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.colors(
-                                    disabledTextColor = Color.Black,
-                                    disabledLabelColor = Color.Gray,
-                                    disabledContainerColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.DarkGray,
-                                    disabledPlaceholderColor = Color.Gray,
-                                    disabledLeadingIconColor = Color.Gray,
-                                    disabledTrailingIconColor = Color.Gray
-                                )
-                            )
-                            OutlinedTextField(
-                                value = phoneNumber2,
-                                onValueChange = {
-                                    if (it.length <= 10 && it.all { char -> char.isDigit() }) {
-                                        phoneNumber2 = it
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        "Phone Number",
-                                        color = Color.Black
-                                    )
-                                },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.colors(
-                                    disabledTextColor = Color.Black,
-                                    disabledLabelColor = Color.Gray,
-                                    disabledContainerColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.DarkGray,
-                                    disabledPlaceholderColor = Color.Gray,
-                                    disabledLeadingIconColor = Color.Gray,
-                                    disabledTrailingIconColor = Color.Gray
-                                )
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        val filled =
-                            name.isNotBlank() && age.isNotBlank() && dateOfBirth.isNotBlank() &&
-                                    phoneNumber1.length == 10 && phoneNumber2.length == 10
-
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Button(
-                                onClick = {
-                                    preferencesHelper.saveUserData(
-                                        name = name,
-                                        age = age,
-                                        dob = dateOfBirth,
-                                        phone1 = phoneNumber1,
-                                        phone2 = phoneNumber2,
-                                        countryCode1 = countryCode1,
-                                        countryCode2 = countryCode2
-                                    )
-                                    navController.navigate("NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2") {
-                                        popUpTo("MainScreen") { inclusive = true }
-                                    }
-                                },
-                                enabled = filled,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .padding(horizontal = 32.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    contentColor = Color.White,
-                                    containerColor = if (filled) Color(0xFFC0CF69) else Color.LightGray
-                                )
-                            ) {
-                                Text(
-                                    "Continue",
-                                    color = if (filled) Color.DarkGray else Color.Gray
-                                )
-                            }
-                        }
+                    popUpTo(Routes.MAIN_SCREEN) {
+                        inclusive = true
                     }
                 }
-            }
+            },
+            enabled = isFormValid,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2563EB),
+                disabledContainerColor = Color.LightGray
+            )
+        ) {
+            Text("Continue")
         }
-    }
-}
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MainScreenPreview() {
-    MaterialTheme {
-        MainScreen(
-            navController = rememberNavController()
-        )
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }

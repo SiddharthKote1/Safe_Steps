@@ -1,13 +1,5 @@
-package com.Siddharth.chat
+package Screens
 
-
-import LocationPermission
-import PreferencesHelper
-import Screens.IntroScreen
-import Screens.MainScreen
-import Screens.NeeScreen
-import Screens.PermissionScreen
-import android.app.Activity
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,15 +10,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.Siddharth.SafeSteps.HelpScreen
+import com.Siddharth.SafeSteps.PreferencesHelper
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val activity = context as Activity
     val preferencesHelper = PreferencesHelper(context)
 
-    // Helper function to check if MainScreen info is filled
     fun isUserDataComplete(): Boolean {
         val user = preferencesHelper.getUserData() ?: return false
         return user.name.isNotBlank() &&
@@ -34,7 +25,6 @@ fun NavGraph(modifier: Modifier = Modifier) {
                 user.phone2.isNotBlank()
     }
 
-    // Determine start destination
     val startDestination = when {
         !preferencesHelper.isAppSetupDone() -> Routes.INTRO_SCREEN
         !isUserDataComplete() -> Routes.MAIN_SCREEN
@@ -62,15 +52,13 @@ fun NavGraph(modifier: Modifier = Modifier) {
         }
         composable(Routes.HELP_SCREEN){
             HelpScreen(navController=navController)
-
         }
-        // MainScreen for user info
         composable(Routes.MAIN_SCREEN) {
             MainScreen(navController = navController)
         }
 
         composable(
-            route = "NeeScreen/{name}/{countryCode1}/{countryCode2}/{phoneNumber1}/{phoneNumber2}",
+            route = Routes.NEE_SCREEN,
             arguments = listOf(
                 navArgument("name") { type = NavType.StringType },
                 navArgument("countryCode1") { type = NavType.StringType },

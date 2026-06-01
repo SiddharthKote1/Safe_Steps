@@ -1,31 +1,41 @@
 package Screens
 
+import com.Siddharth.SafeSteps.PreferencesHelper
 import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.Siddharth.SafeSteps.R
 import com.Siddharth.SafeSteps.EmergencyHelper
-import PreferencesHelper
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import com.Siddharth.SafeSteps.R
+import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun NeeScreen(
     name: String = "",
@@ -35,6 +45,7 @@ fun NeeScreen(
     phoneNumber2: String = "",
     navController: NavController
 ) {
+
     val context = LocalContext.current
     val preferencesHelper = PreferencesHelper(context)
 
@@ -60,6 +71,8 @@ fun NeeScreen(
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
             add(Manifest.permission.SEND_SMS)
             add(Manifest.permission.CALL_PHONE)
+            add(Manifest.permission.RECORD_AUDIO)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 add(Manifest.permission.POST_NOTIFICATIONS)
             }
@@ -74,131 +87,250 @@ fun NeeScreen(
 
     LaunchedEffect(permissionsState.allPermissionsGranted) {
         if (permissionsState.allPermissionsGranted) {
-            EmergencyHelper.contact1 = "$userCountryCode1$userPhone1"
-            EmergencyHelper.contact2 = "$userCountryCode2$userPhone2"
+            EmergencyHelper.contact1 =
+                "$userCountryCode1$userPhone1"
+
+            EmergencyHelper.contact2 =
+                "$userCountryCode2$userPhone2"
         }
     }
 
-    var menuExpanded by remember { mutableStateOf(false) }
+    var menuExpanded by remember {
+        mutableStateOf(false)
+    }
 
-    Scaffold(
-        bottomBar = {
-            BottomBar(navController)
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8F9FC))
+            .padding(16.dp)
+    ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color(0xFF3A7BD5), Color(0xFF00D2FF))
-                    )
-                )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
-            val composition by rememberLottieComposition(
-                LottieCompositionSpec.RawRes(R.raw.sos)
-            )
-            val progress by animateLottieCompositionAsState(
-                composition,
-                iterations = LottieConstants.IterateForever
+            Box {
+
+                IconButton(
+                    onClick = {
+                        menuExpanded = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = {
+                        menuExpanded = false
+                    }
+                ) {
+
+                    DropdownMenuItem(
+                        text = {
+                            Text("Accessibility Settings")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+
+                            context.startActivity(
+                                Intent(
+                                    Settings.ACTION_ACCESSIBILITY_SETTINGS
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+
+            Text(
+                text = "SafeSteps",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
 
-            Column(
+            IconButton(
+                onClick = { }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.NotificationsNone,
+                    contentDescription = null
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
+        ) {
+
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Column {
+
                     Text(
-                        "Emergency Info",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = Color.White
+                        text = "Hello, $userName",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
                     )
 
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.menubar),
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Settings") },
-                                onClick = {
-                                    menuExpanded = false
-                                    context.startActivity(
-                                        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                    )
-                                }
-                            )
-                        }
-                    }
+                    Text(
+                        text = "You are protected",
+                        color = Color.Gray
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                LottieAnimation(
-                    composition = composition,
-                    progress = progress,
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
+                        .size(40.dp)
+                        .background(
+                            Color(0xFFE9FFF1),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = null,
+                        tint = Color(0xFF22C55E)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(painter = painterResource(R.drawable.img),
+                contentDescription = null)
+
+        }
+
+        Text(
+            text = "Hold volume button for 5 seconds for sos",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(
+                Alignment.CenterHorizontally
+            ),
+            color = Color.DarkGray,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
+        ) {
+
+            Column(
+                modifier = Modifier.padding(18.dp)
+            ) {
+
+                Text(
+                    text = "Emergency Information",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        InfoRow("Name", userName)
-                        InfoRow("Phone 1", "$userCountryCode1 $userPhone1")
-                        InfoRow("Phone 2", "$userCountryCode2 $userPhone2")
-                    }
-                }
+                InfoRow(
+                    label = "Contact 1",
+                    value = "$userCountryCode1 $userPhone1"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                InfoRow(
+                    label = "Contact 2",
+                    value = "$userCountryCode2 $userPhone2"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                HorizontalDivider()
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                InfoRow(
+                    label = "Accessibility",
+                    value = "Enabled"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                InfoRow(
+                    label = "Location Tracking",
+                    value = "Active"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                InfoRow(
+                    label = "Emergency SMS",
+                    value = "Ready"
+                )
             }
         }
     }
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    Column {
-        Text(label, color = Color(0xFF1976D2))
-        Text(value.ifEmpty { "Not set" }, style = MaterialTheme.typography.bodyLarge)
+fun InfoRow(
+    label: String,
+    value: String
+) {
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        Text(
+            text = label,
+            color = Color.DarkGray
+        )
+
+        Text(
+            text = value,
+            color = Color(0xFF2563EB),
+            fontWeight = FontWeight.SemiBold
+        )
     }
-}
-
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun NeeScreenPreview() {
-    NeeScreen(
-        name = "Siddharth Kote",
-        countryCode1 = "+91",
-        countryCode2 = "+91",
-        phoneNumber1 = "9876543210",
-        phoneNumber2 = "9123456780",
-        navController = NavController(context = LocalContext.current)
-    )
 }
