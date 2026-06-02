@@ -15,7 +15,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import data.RetrofitClient
+import com.Siddharth.SafeSteps.data.RetrofitClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,6 +26,7 @@ import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import okio.ByteString.Companion.toByteString
 
 class AudioStreamingService : Service() {
 
@@ -125,7 +126,7 @@ class AudioStreamingService : Service() {
             while (isActive && isRecording) {
                 val readResult = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                 if (readResult > 0) {
-                    webSocket.send(ByteString.of(buffer, 0, readResult))
+                    webSocket.send(buffer.toByteString(0, readResult))
                 }
             }
         }

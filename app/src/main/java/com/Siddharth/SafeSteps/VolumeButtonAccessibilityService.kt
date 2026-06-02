@@ -8,10 +8,9 @@ import kotlinx.coroutines.*
 
 class VolumeButtonAccessibilityService : AccessibilityService() {
 
-    private var volumeUpPressed = false
     private var volumeDownPressed = false
     private var checkJob: Job? = null
-    private val triggerDuration = 5000L
+    private val triggerDuration = 3000L // 3 seconds long press
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Not used
@@ -24,21 +23,20 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
         Log.d("VolumeButtonService", "Key event: ${event.keyCode}, Action: ${event.action}")
 
         return when (event.keyCode) {
-            KeyEvent.KEYCODE_VOLUME_UP -> handleVolumeKey(event, isUp = true)
-            KeyEvent.KEYCODE_VOLUME_DOWN -> handleVolumeKey(event, isUp = false)
+            KeyEvent.KEYCODE_VOLUME_DOWN -> handleVolumeKey(event)
             else -> super.onKeyEvent(event)
         }
     }
 
-    private fun handleVolumeKey(event: KeyEvent, isUp: Boolean): Boolean {
+    private fun handleVolumeKey(event: KeyEvent): Boolean {
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
-                if (isUp) volumeUpPressed = true else volumeDownPressed = true
+                volumeDownPressed = true
 
-                if (volumeUpPressed && volumeDownPressed && checkJob == null) {
+                if (volumeDownPressed && checkJob == null) {
                     checkJob = CoroutineScope(Dispatchers.Default).launch {
                         delay(triggerDuration)
-                        if (volumeUpPressed && volumeDownPressed) {
+                        if (volumeDownPressed) {
                             triggerEmergencyAction()
                         }
                     }
@@ -46,13 +44,13 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
             }
 
             KeyEvent.ACTION_UP -> {
-                if (isUp) volumeUpPressed = false else volumeDownPressed = false
+                volumeDownPressed = false
                 checkJob?.cancel()
                 checkJob = null
             }
         }
 
-        return volumeUpPressed && volumeDownPressed
+        return volumeDownPressed
     }
 
     private fun triggerEmergencyAction() {

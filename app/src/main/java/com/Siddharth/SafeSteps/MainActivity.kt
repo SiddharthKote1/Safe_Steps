@@ -11,8 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.Siddharth.SafeSteps.ui.theme.ChatΠTheme
-import com.Siddharth.chat.NavGraph
+import com.Siddharth.SafeSteps.ui.theme.SafeStepsTheme
+import com.Siddharth.SafeSteps.screens.NavGraph
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ChatΠTheme {
+            SafeStepsTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

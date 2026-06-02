@@ -1,9 +1,9 @@
 
 /*
-package com.example.SafeSteps
+package com.Siddharth.SafeSteps
 
-import Screens.Routes
-import Screens.onLoginClicked
+import com.Siddharth.SafeSteps.screens.Routes
+import com.Siddharth.SafeSteps.screens.onLoginClicked
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -52,7 +52,7 @@ fun PhoneScreen(navController: NavController) {
             val account = task.result
             Toast.makeText(context, "Signed in as ${account?.email}", Toast.LENGTH_SHORT).show()
 
-            navController.navigate(Routes.MAIN_SCREEN) {
+            navController.navigate(Routes.SETUP_CONTACT_1) {
                 popUpTo(Routes.PHONE_SCREEN) { inclusive = true }
             }
 
