@@ -10,6 +10,6 @@ data class ProfileUpdateRequest(
     val notificationEnabled: Boolean,
     val preferredLanguage: String,
     val privacyEnabled: Boolean,
-    val sosSensitivity: Int,
+    val sosSensitivity: Double,
     val themeDarkMode: Boolean
 )

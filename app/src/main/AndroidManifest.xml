@@ -58,10 +58,12 @@
             android:foregroundServiceType="location" />
 
         <service
-            android:name=".EmergencySessionService"
+            android:name=".AudioStreamingService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="location|microphone" />
+            android:foregroundServiceType="microphone" />
+
+
 
     </application>
 

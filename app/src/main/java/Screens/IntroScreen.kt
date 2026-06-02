@@ -131,9 +131,7 @@ fun IntroScreen(
 
             Button(
                 onClick = {
-                    navController.navigate(
-                        Routes.PERMISSION_SCREEN
-                    )
+                    navController.navigate(Routes.PERMISSION_SCREEN)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

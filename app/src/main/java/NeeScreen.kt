@@ -31,6 +31,10 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.Siddharth.SafeSteps.EmergencyHelper
 import com.Siddharth.SafeSteps.R
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.collectAsState
+import com.Siddharth.SafeSteps.ThreatLevelManager
+import data.RetrofitClient
+import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -64,6 +68,10 @@ fun NeeScreen(
             userPhone2 = it.phone2
         }
     }
+
+    val activeSessionId by ThreatLevelManager.activeSessionId.collectAsState()
+    val threatLevel by ThreatLevelManager.threatLevel.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     val permissionsState = rememberMultiplePermissionsState(
         permissions = buildList {
@@ -174,6 +182,57 @@ fun NeeScreen(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        if (activeSessionId != null) {
+            val threatColor = when(threatLevel) {
+                "LOW" -> Color(0xFF3FB950)
+                "MEDIUM" -> Color(0xFFF0A030)
+                "HIGH" -> Color(0xFFF85149)
+                "CRITICAL" -> Color(0xFFFF4444)
+                else -> Color.Gray
+            }
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = threatColor)
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "SOS ACTIVE",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    val displayThreat = threatLevel ?: "UNKNOWN"
+                    Text(
+                        text = "Threat Level: $displayThreat",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                try {
+                                    RetrofitClient.apiService.endSession()
+                                    context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
+                                    ThreatLevelManager.clearSession()
+                                } catch (e: Exception) {
+                                    // Error ending session
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    ) {
+                        Text("I Am Safe (End SOS)", color = threatColor, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
 
         Card(

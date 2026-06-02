@@ -1,6 +1,10 @@
 package viewmodel
 
 import ContactDataClass.AddContactRequest
+import ContactDataClass.Contact
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -10,11 +14,15 @@ class ContactsViewModel : ViewModel() {
 
     private val repository = ContactRepository()
 
+    var contacts by mutableStateOf<List<Contact>>(emptyList())
+        private set
+
     fun getContacts() {
 
         viewModelScope.launch {
 
-            repository.getContacts()
+            contacts =
+                repository.getContacts()
         }
     }
 
@@ -25,6 +33,8 @@ class ContactsViewModel : ViewModel() {
         viewModelScope.launch {
 
             repository.addContact(request)
+
+            getContacts()
         }
     }
 
@@ -39,6 +49,8 @@ class ContactsViewModel : ViewModel() {
                 id,
                 request
             )
+
+            getContacts()
         }
     }
 
@@ -49,6 +61,8 @@ class ContactsViewModel : ViewModel() {
         viewModelScope.launch {
 
             repository.deleteContact(id)
+
+            getContacts()
         }
     }
 }

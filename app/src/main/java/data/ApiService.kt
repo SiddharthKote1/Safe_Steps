@@ -129,7 +129,7 @@ interface ApiService {
     @POST("location/update")
     suspend fun updateLocation(
         @Body request: LocationUpdateRequest
-    ): String
+    ): LocationDataClass.LocationUpdateResponse
 
     @GET("location/{session_id}")
     suspend fun getLatestLocation(

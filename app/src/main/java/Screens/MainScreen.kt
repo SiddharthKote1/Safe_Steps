@@ -31,6 +31,11 @@ import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import java.util.*
 import kotlinx.coroutines.launch
+import data.RetrofitClient
+import Screens.SessionManager
+import AuthDataClass.RegisterRequest
+import ContactDataClass.AddContactRequest
+import android.util.Log
 
 @Composable
 fun MainScreen(
@@ -337,32 +342,78 @@ fun MainScreen(
 
         Button(
             onClick = {
-
-                preferencesHelper.saveOwnPhone(
-                    ownPhoneNumber,
-                    ownCountryCode
-                )
-
-                preferencesHelper.saveUserData(
-                    name = name,
-                    age = age,
-                    phone1 = phoneNumber1,
-                    phone2 = phoneNumber2,
-                    countryCode1 = countryCode1,
-                    countryCode2 = countryCode2
-                )
-
-                Toast.makeText(
-                    context,
-                    "Profile Saved Successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                navController.navigate(
-                    "NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2"
-                ) {
-                    popUpTo(Routes.MAIN_SCREEN) {
-                        inclusive = true
+                isLoading = true
+                coroutineScope.launch {
+                    try {
+                        val fullPhone = ownCountryCode + ownPhoneNumber
+                        // Call Register API
+                        val registerResponse = RetrofitClient.apiService.register(
+                            RegisterRequest(
+                                age = age,
+                                blood_group = "O+", // Default for now
+                                date_of_birth = "2000-01-01",
+                                full_name = name,
+                                gender = "Unknown",
+                                medical_notes = "",
+                                phone = fullPhone,
+                                preferred_language = "English"
+                            )
+                        )
+                        
+                        // Save token
+                        val token = registerResponse.token
+                        SessionManager.token = token
+                        preferencesHelper.saveOwnPhone(ownPhoneNumber, ownCountryCode)
+                        preferencesHelper.saveUserData(
+                            name = name,
+                            age = age,
+                            phone1 = phoneNumber1,
+                            phone2 = phoneNumber2,
+                            countryCode1 = countryCode1,
+                            countryCode2 = countryCode2
+                        )
+                        
+                        // Add Emergency Contacts
+                        try {
+                            RetrofitClient.apiService.addContact(
+                                AddContactRequest(
+                                    name = "Emergency Contact 1",
+                                    phoneNumber = countryCode1 + phoneNumber1,
+                                    priority = "Primary",
+                                    relationship = "Family"
+                                )
+                            )
+                            RetrofitClient.apiService.addContact(
+                                AddContactRequest(
+                                    name = "Emergency Contact 2",
+                                    phoneNumber = countryCode2 + phoneNumber2,
+                                    priority = "Secondary",
+                                    relationship = "Family"
+                                )
+                            )
+                        } catch (e: Exception) {
+                            Log.e("MainScreen", "Failed to add contacts", e)
+                        }
+                        
+                        Toast.makeText(context, "Profile Saved Successfully", Toast.LENGTH_SHORT).show()
+                        navController.navigate("NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2") {
+                            popUpTo(Routes.MAIN_SCREEN) { inclusive = true }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("MainScreen", "Registration failed", e)
+                        // If phone already registered, try login
+                        try {
+                             val loginResponse = RetrofitClient.apiService.login(AuthDataClass.LoginRequest(ownCountryCode + ownPhoneNumber))
+                             SessionManager.token = loginResponse.token
+                             preferencesHelper.saveOwnPhone(ownPhoneNumber, ownCountryCode)
+                             navController.navigate("NeeScreen/$name/$countryCode1/$countryCode2/$phoneNumber1/$phoneNumber2") {
+                                popUpTo(Routes.MAIN_SCREEN) { inclusive = true }
+                             }
+                        } catch (loginError: Exception) {
+                             Toast.makeText(context, "Registration/Login Failed: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    } finally {
+                        isLoading = false
                     }
                 }
             },
@@ -376,7 +427,11 @@ fun MainScreen(
                 disabledContainerColor = Color.LightGray
             )
         ) {
-            Text("Continue")
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text("Continue")
+            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))

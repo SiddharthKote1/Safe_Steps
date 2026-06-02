@@ -61,10 +61,6 @@ fun LocationPermission(navController: NavController) {
                 "Location Enabled",
                 Toast.LENGTH_SHORT
             ).show()
-
-            navController.navigate(Routes.MAIN_SCREEN) {
-                popUpTo(0)
-            }
         }
     }
 
@@ -141,6 +137,7 @@ fun LocationPermission(navController: NavController) {
         Button(
             onClick = {
                 permissionsState.launchMultiplePermissionRequest()
+                navController.navigate(Routes.LOCATION_SCREEN)
             },
             modifier = Modifier
                 .fillMaxWidth()

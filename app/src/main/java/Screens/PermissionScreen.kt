@@ -198,12 +198,9 @@ fun PermissionScreen(
 
                         return@Button
                     }
+                    navController.navigate(Routes.LOCATION_SCREEN)
 
-                    navController.navigate(Routes.LOCATION_SCREEN) {
-                        popUpTo(Routes.PERMISSION_SCREEN) {
-                            inclusive = true
-                        }
-                    }
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()

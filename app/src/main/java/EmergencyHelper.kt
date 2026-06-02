@@ -24,38 +24,70 @@ object EmergencyHelper {
             return
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val locationReady = waitForLocation()
-            if (!locationReady) {
-                Toast.makeText(context, "Unable to fetch location. Try again.", Toast.LENGTH_SHORT).show()
-                return@launch
-            }
-
-            val lat = LocationHolder.latitude
-            val lng = LocationHolder.longitude
-            val locationUrl = "https://maps.google.com/?q=$lat,$lng"
-            val message = " \"EMERGENCY! I${user.name}. My location: $locationUrl\"  \n"
-
+        CoroutineScope(Dispatchers.IO).launch {
             try {
+                // 1. Start Session
+                val sessionResponse = data.RetrofitClient.apiService.startSession()
+                val sessionId = sessionResponse.session_id
+                com.Siddharth.SafeSteps.ThreatLevelManager.setSessionId(sessionId)
+                com.Siddharth.SafeSteps.ThreatLevelManager.updateThreatLevel("LOW") // Default
+                
+                
+                // 2. Start Audio Streaming Service
+                val serviceIntent = Intent(context, AudioStreamingService::class.java).apply {
+                    putExtra("SESSION_ID", sessionId)
+                }
+                ContextCompat.startForegroundService(context, serviceIntent)
+
+                // 3. Wait for Location
+                val locationReady = waitForLocation()
+                if (!locationReady) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Unable to fetch location.", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+
+                // 4. Update Location & Get Maps Link
+                val lat = LocationHolder.latitude ?: 0.0
+                val lng = LocationHolder.longitude ?: 0.0
+                val locationResponse = data.RetrofitClient.apiService.updateLocation(
+                    LocationDataClass.LocationUpdateRequest(
+                        latitude = lat,
+                        longitude = lng,
+                        accuracy = 5.0,
+                        speed = 0.0,
+                        heading = 0.0
+                    )
+                )
+
+                val locationUrl = locationResponse.maps_link ?: "https://maps.google.com/?q=$lat,$lng"
+                val message = " \"EMERGENCY! I am ${user.name}. My location: $locationUrl\"  \n"
+
+                // 5. Send SMS Local Fallback
                 val smsManager = SmsManager.getDefault()
                 smsManager.sendTextMessage(contact1, null, message, null, null)
                 smsManager.sendTextMessage(contact2, null, message, null, null)
-                Toast.makeText(context, "Emergency SMS sent", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(context, "SMS failed: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Emergency SOS Active & SMS sent", Toast.LENGTH_SHORT).show()
+                }
 
-            // Make emergency call
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$contact1"))
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-            } else if (context is Activity) {
-                ActivityCompat.requestPermissions(
-                    context,
-                    arrayOf(Manifest.permission.CALL_PHONE),
-                    1
-                )
+                // 6. Make emergency call
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                    val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$contact1"))
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                } else if (context is Activity) {
+                    ActivityCompat.requestPermissions(
+                        context,
+                        arrayOf(Manifest.permission.CALL_PHONE),
+                        1
+                    )
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Failed to start emergency session: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

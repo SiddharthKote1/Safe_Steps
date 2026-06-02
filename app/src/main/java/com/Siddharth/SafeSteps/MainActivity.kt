@@ -11,8 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import Screens.NavGraph
 import com.Siddharth.SafeSteps.ui.theme.ChatΠTheme
+import com.Siddharth.chat.NavGraph
 
 class MainActivity : ComponentActivity() {
 
