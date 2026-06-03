@@ -61,7 +61,8 @@ async def websocket_audio_endpoint(websocket: WebSocket, session_id: str):
 
     try:
         while True:
-            data = await websocket.receive_bytes()
+            # wait_for ensures we don't hang forever if cellular connection drops abruptly
+            data = await asyncio.wait_for(websocket.receive_bytes(), timeout=15.0)
             audio_buffer.extend(data)
 
             while len(audio_buffer) >= CHUNK_SIZE:
@@ -87,6 +88,10 @@ async def websocket_audio_endpoint(websocket: WebSocket, session_id: str):
                     )
 
     except WebSocketDisconnect:
+        Logger.info(f"WS: Client {session_id} disconnected normally.")
+        manager.disconnect(session_id)
+    except asyncio.TimeoutError:
+        Logger.warn(f"WS: Connection for {session_id} timed out. Dropping.")
         manager.disconnect(session_id)
     except Exception as e:
         Logger.error(f"WS stream error for {session_id}: {e}")

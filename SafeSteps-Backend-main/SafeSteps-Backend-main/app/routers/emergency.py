@@ -86,8 +86,22 @@ async def start_session(current_user: User = Depends(get_current_user)):
     )
 
 
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+
+async def _background_report_generation(session: EmergencySession):
+    try:
+        from app.services.report_service import report_service
+        await report_service.generate_and_save_report(session)
+        await session.save()
+        Logger.info(f"Background report generated for session {session.id}")
+    except Exception as e:
+        Logger.error(f"Background report generation failed: {e}")
+
 @router.post("/end", response_model=LoggedIncidentSchema)
-async def end_session(current_user: User = Depends(get_current_user)):
+async def end_session(
+    background_tasks: BackgroundTasks, 
+    current_user: User = Depends(get_current_user)
+):
     session = await EmergencySession.find_one(
         EmergencySession.user_id == current_user.id,
         EmergencySession.status == "active",
@@ -104,12 +118,8 @@ async def end_session(current_user: User = Depends(get_current_user)):
         session.timeline.append(TimelineEvent(event="SOS Deactivated — User Marked Safe"))
         await session.save()
 
-        # Safe SMS is sent by the app via Android SmsManager using the user's SIM
-        try:
-            await report_service.generate_and_save_report(session)
-            await session.save()
-        except Exception as e:
-            Logger.error(f"Report generation failed: {e}")
+        # Generate the LLM report in the background so the user API response is instant
+        background_tasks.add_task(_background_report_generation, session)
 
     return _compile(session)
 

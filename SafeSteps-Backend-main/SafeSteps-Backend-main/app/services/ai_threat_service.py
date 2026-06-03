@@ -78,7 +78,11 @@ class AIThreatService:
             try:
                 return await self._call_groq(transcript, language, prior_threat, recent_transcripts or [])
             except Exception as e:
-                Logger.error(f"AI Threat: Groq call failed: {e}. Using keyword fallback.")
+                Logger.error(f"AI Threat: Groq call failed: {e}. Attempting Gemini fallback.")
+                try:
+                    return await self._gemini_fallback(transcript, language, prior_threat, recent_transcripts or [])
+                except Exception as gemini_e:
+                    Logger.error(f"AI Threat: Gemini fallback failed: {gemini_e}. Using keyword fallback.")
 
         return self._keyword_fallback(transcript, prior_threat)
 
@@ -118,6 +122,51 @@ class AIThreatService:
             resp.raise_for_status()
 
         data = json.loads(resp.json()["choices"][0]["message"]["content"])
+        return _sanitize(data)
+        
+    async def _gemini_fallback(
+        self, transcript: str, language: str, prior_threat: str, recent_transcripts: list
+    ) -> dict:
+        """Fallback to Google Gemini 1.5 Flash for threat analysis if Groq fails."""
+        if not settings.GEMINI_API_KEY:
+            raise Exception("Gemini API Key not set.")
+            
+        import asyncio
+        from google import genai
+        from google.genai import types
+        
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        
+        context_block = ""
+        if recent_transcripts:
+            lines = "\n".join(f"  - {t}" for t in recent_transcripts[-3:])
+            context_block = f"\nRecent conversation context (for continuity):\n{lines}\n"
+
+        user_content = (
+            f"Language detected: {language}\n"
+            f"Prior threat level: {prior_threat}\n"
+            f"{context_block}"
+            f"Current transcript: \"{transcript}\"\n\n"
+            f"Return JSON: threat_level, events (array), is_safe (bool), incident_type, reasons"
+        )
+        
+        # We run the sync genai client inside to_thread to prevent blocking the async event loop
+        def run_gemini():
+            return client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[
+                    types.Part.from_text(text=_SYSTEM_PROMPT),
+                    types.Part.from_text(text=user_content),
+                ],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.1
+                )
+            )
+            
+        response = await asyncio.to_thread(run_gemini)
+        data = json.loads(response.text)
+        Logger.info("Gemini AI Threat fallback success.")
         return _sanitize(data)
 
     def _keyword_fallback(self, transcript: str, prior_threat: str) -> dict:

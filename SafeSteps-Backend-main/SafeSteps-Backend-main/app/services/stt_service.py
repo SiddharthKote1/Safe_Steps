@@ -98,7 +98,38 @@ class STTService:
             raise Exception("STT API error")
 
         except Exception as e:
-            Logger.error(f"Sarvam STT request error: {e}. Returning empty transcript.")
+            Logger.error(f"Sarvam STT request error: {e}. Attempting Gemini fallback.")
+            return self._gemini_fallback(wav_bytes)
+
+    def _gemini_fallback(self, wav_bytes: bytes) -> dict:
+        """Fallback to Google Gemini 1.5 Flash for audio transcription if Sarvam fails."""
+        if not settings.GEMINI_API_KEY:
+            Logger.error("Gemini API key not set for STT fallback.")
+            return {"transcript": "", "language": "en-IN", "confidence": 0.0}
+            
+        try:
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            
+            # Gemini understands audio parts natively
+            prompt = "Transcribe this audio exactly. Do not add any commentary. If the language is Hindi or Marathi, transcribe it in the native script."
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[
+                    types.Part.from_bytes(data=wav_bytes, mime_type='audio/wav'),
+                    prompt,
+                ]
+            )
+            text = response.text.strip() if response.text else ""
+            Logger.info("Gemini STT fallback success.")
+            return {
+                "transcript": text,
+                "language": "en-IN", # We assume en-IN for downstream processing if Gemini handled it
+                "confidence": 0.85 
+            }
+        except Exception as fallback_err:
+            Logger.error(f"Gemini STT fallback also failed: {fallback_err}")
             return {
                 "transcript": "",
                 "language": "en-IN",

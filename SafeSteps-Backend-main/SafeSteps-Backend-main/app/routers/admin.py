@@ -19,9 +19,22 @@ async def get_health():
 
 
 @router.get("/metrics")
-def get_metrics():
-    return {"cpu_usage_pct": 1.5, "memory_usage_mb": 42.8,
-            "active_websocket_connections": 0, "total_requests_processed": 104}
+async def get_metrics():
+    from app.models.user import User
+    from app.models.session import EmergencySession
+    import psutil
+    
+    total_users = await User.count()
+    total_sessions = await EmergencySession.count()
+    active_sessions = await EmergencySession.find(EmergencySession.status == "active").count()
+    
+    return {
+        "cpu_usage_pct": psutil.cpu_percent(interval=0.1), 
+        "memory_usage_mb": psutil.virtual_memory().used / (1024 * 1024),
+        "total_users": total_users,
+        "total_historical_sessions": total_sessions,
+        "active_live_sessions": active_sessions,
+    }
 
 
 @router.get("/version")
