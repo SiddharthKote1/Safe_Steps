@@ -92,7 +92,7 @@ object EmergencyHelper {
 
                 // 6. Make emergency call
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                    val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$c1"))
+                    val intent = Intent(Intent.ACTION_CALL, Uri.fromParts("tel", c1, null))
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 } else if (context is Activity) {

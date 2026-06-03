@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import android.net.Uri
+import com.Siddharth.SafeSteps.PreferencesHelper
 import com.Siddharth.SafeSteps.R
 import com.Siddharth.SafeSteps.viewmodel.AuthState
 import com.Siddharth.SafeSteps.viewmodel.AuthViewModel
@@ -37,12 +39,22 @@ fun LoginScreen(
 
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
+    val preferencesHelper = remember { PreferencesHelper(context) }
 
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Success -> {
                 Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
-                navController.navigate(Routes.PERMISSION_SCREEN) {
+                val user = preferencesHelper.getUserData()
+                val isUserDataComplete = user != null && user.name.isNotBlank() && user.phone1.isNotBlank()
+                
+                val nextRoute = when {
+                    !preferencesHelper.isAppSetupDone() -> Routes.PERMISSION_SCREEN
+                    !isUserDataComplete -> Routes.SETUP_CONTACTS
+                    else -> "NeeScreen/${Uri.encode(user!!.name)}/${Uri.encode(user.countryCode1)}/${Uri.encode(user.countryCode2)}/${Uri.encode(user.phone1)}/${Uri.encode(user.phone2)}"
+                }
+                
+                navController.navigate(nextRoute) {
                     popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
                 }
                 authViewModel.resetState()
@@ -139,10 +151,20 @@ fun LoginScreen(
                 onValueChange = { password = it }
             )
             
+            val isPhoneValid = isEmail || phoneOrEmail.length == 10
+            if (!isEmail && phoneOrEmail.isNotEmpty() && !isPhoneValid) {
+                Text(
+                    text = "Invalid number: Must be exactly 10 digits",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                )
+            }
+            
             Spacer(modifier = Modifier.height(40.dp))
             
             // Login Button
-            val isButtonEnabled = phoneOrEmail.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading
+            val isButtonEnabled = phoneOrEmail.isNotBlank() && password.isNotBlank() && isPhoneValid && authState !is AuthState.Loading
             Button(
                 onClick = { 
                     if (isButtonEnabled) {

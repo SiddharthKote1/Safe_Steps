@@ -3,8 +3,9 @@ import httpx
 from app.config import settings
 from app.utils.logger import Logger
 
-_GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-_GROQ_MODEL = "llama-3.1-8b-instant"
+_OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+_OPENROUTER_MODEL = "meta-llama/llama-3.1-8b-instruct"
+_OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 _SYSTEM_PROMPT = """You are SafeSteps AI — a real-time emergency threat analyzer embedded in a personal safety app.
 
@@ -16,6 +17,7 @@ Analyze the transcript and return a threat assessment. You must understand FULL 
 IMPORTANT RULES:
 - "I'm killing it at work" = LOW. Context matters. Idioms are not threats.
 - "There's someone behind me" = HIGH even without panic words — infer danger from situation.
+- KEYWORD TRIGGER: If the user says "help", "help me", "save me", "emergency", "please stop", "call the police", or similar EXPLICIT distress phrases, YOU MUST IMMEDIATELY CLASSIFY AS HIGH OR CRITICAL THREAT.
 - "Police is here", "I am safe", "false alarm", "all clear" = is_safe: true, threat: LOW.
 - Understand English, Hindi (Devanagari + Roman transliteration), and Marathi naturally.
 - Use prior_threat as context — if prior was HIGH, a neutral statement alone should give MEDIUM minimum (unless is_safe is true).
@@ -49,11 +51,11 @@ Return ONLY a valid JSON object with exactly these keys:
 
 class AIThreatService:
     def __init__(self):
-        self._ready = bool(settings.GROQ_API_KEY)
+        self._ready = bool(_OPENROUTER_API_KEY)
         if self._ready:
-            Logger.info("AI Threat Service: Groq-powered threat analysis ready.")
+            Logger.info("AI Threat Service: OpenRouter-powered threat analysis ready.")
         else:
-            Logger.warn("AI Threat Service: GROQ_API_KEY not set — using keyword fallback only.")
+            Logger.warn("AI Threat Service: OPENROUTER_API_KEY not set — using keyword fallback only.")
 
     async def analyze(
         self,
@@ -76,9 +78,9 @@ class AIThreatService:
 
         if self._ready:
             try:
-                return await self._call_groq(transcript, language, prior_threat, recent_transcripts or [])
+                return await self._call_openrouter(transcript, language, prior_threat, recent_transcripts or [])
             except Exception as e:
-                Logger.error(f"AI Threat: Groq call failed: {e}. Attempting Gemini fallback.")
+                Logger.error(f"AI Threat: OpenRouter call failed: {e}. Attempting Gemini fallback.")
                 try:
                     return await self._gemini_fallback(transcript, language, prior_threat, recent_transcripts or [])
                 except Exception as gemini_e:
@@ -86,7 +88,7 @@ class AIThreatService:
 
         return self._keyword_fallback(transcript, prior_threat)
 
-    async def _call_groq(
+    async def _call_openrouter(
         self, transcript: str, language: str, prior_threat: str, recent_transcripts: list
     ) -> dict:
         context_block = ""
@@ -103,7 +105,7 @@ class AIThreatService:
         )
 
         payload = {
-            "model": _GROQ_MODEL,
+            "model": _OPENROUTER_MODEL,
             "messages": [
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user",   "content": user_content},
@@ -113,12 +115,14 @@ class AIThreatService:
             "max_tokens": 256,
         }
         headers = {
-            "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+            "Authorization": f"Bearer {_OPENROUTER_API_KEY}",
+            "HTTP-Referer": "http://localhost:8000",
+            "X-Title": "SafeSteps AI",
             "Content-Type": "application/json",
         }
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(_GROQ_API_URL, json=payload, headers=headers)
+            resp = await client.post(_OPENROUTER_API_URL, json=payload, headers=headers)
             resp.raise_for_status()
 
         data = json.loads(resp.json()["choices"][0]["message"]["content"])

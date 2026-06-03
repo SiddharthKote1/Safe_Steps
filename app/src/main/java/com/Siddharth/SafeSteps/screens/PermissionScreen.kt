@@ -278,20 +278,33 @@ fun PermissionScreen(
     }
 }
 
-fun isAccessibilityServiceEnabled(
-    context: Context
-): Boolean {
-
-    return try {
-
-        Settings.Secure.getInt(
-            context.contentResolver,
+fun isAccessibilityServiceEnabled(context: Context): Boolean {
+    var accessibilityEnabled = 0
+    val service = "com.Siddharth.SafeSteps/com.Siddharth.SafeSteps.VolumeButtonAccessibilityService"
+    try {
+        accessibilityEnabled = Settings.Secure.getInt(
+            context.applicationContext.contentResolver,
             Settings.Secure.ACCESSIBILITY_ENABLED
-        ) == 1
-
-    } catch (e: Exception) {
-        false
+        )
+    } catch (e: Settings.SettingNotFoundException) {
+        // Ignore
     }
+
+    if (accessibilityEnabled == 1) {
+        val settingValue = Settings.Secure.getString(
+            context.applicationContext.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        if (settingValue != null) {
+            val split = settingValue.split(':')
+            for (s in split) {
+                if (s.equals(service, ignoreCase = true)) {
+                    return true
+                }
+            }
+        }
+    }
+    return false
 }
 
 @Composable

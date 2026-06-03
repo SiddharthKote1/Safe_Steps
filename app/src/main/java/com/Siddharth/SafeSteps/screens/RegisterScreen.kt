@@ -162,6 +162,16 @@ fun RegisterScreen(
                 onCountryChange = { selectedCountry = it }
             )
             
+            val isPhoneValid = phone.length == 10
+            if (phone.isNotEmpty() && !isPhoneValid) {
+                Text(
+                    text = "Invalid number: Must be exactly 10 digits",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                )
+            }
+            
             Spacer(modifier = Modifier.height(14.dp))
             
             // Password Input
@@ -180,7 +190,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(28.dp))
             
             // Register Button
-            val isButtonEnabled = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading
+            val isButtonEnabled = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && isPhoneValid && password.isNotBlank() && authState !is AuthState.Loading
             Button(
                 onClick = { 
                     if (isButtonEnabled) {

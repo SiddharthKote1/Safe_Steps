@@ -65,14 +65,15 @@ class AuthViewModel(
                         }
                     }
                     
-                    // Save local profile data
+                    // Save local profile data, preserving existing contacts if present
+                    val existingUser = preferencesHelper.getUserData()
                     preferencesHelper.saveUserData(
                         name = fullName,
-                        age = "20",
-                        phone1 = "",
-                        phone2 = "",
-                        countryCode1 = "",
-                        countryCode2 = ""
+                        age = existingUser?.age ?: "20",
+                        phone1 = existingUser?.phone1 ?: "",
+                        phone2 = existingUser?.phone2 ?: "",
+                        countryCode1 = existingUser?.countryCode1 ?: "",
+                        countryCode2 = existingUser?.countryCode2 ?: ""
                     )
                     preferencesHelper.saveOwnPhone(localPhone, countryCode)
                     
@@ -106,7 +107,6 @@ class AuthViewModel(
                 val request = SupabaseSignUpRequest(
                     email = email,
                     password = password,
-                    phone = fullPhone,
                     data = userMetadata
                 )
 
@@ -121,14 +121,15 @@ class AuthViewModel(
                     preferencesHelper.saveAccessToken(token)
                 }
                 
-                // Save user profile details locally
+                // Save user profile details locally, preserving existing contacts
+                val existingUser = preferencesHelper.getUserData()
                 preferencesHelper.saveUserData(
                     name = name,
-                    age = "20",
-                    phone1 = "",
-                    phone2 = "",
-                    countryCode1 = "",
-                    countryCode2 = ""
+                    age = existingUser?.age ?: "20",
+                    phone1 = existingUser?.phone1 ?: "",
+                    phone2 = existingUser?.phone2 ?: "",
+                    countryCode1 = existingUser?.countryCode1 ?: "",
+                    countryCode2 = existingUser?.countryCode2 ?: ""
                 )
                 preferencesHelper.saveOwnPhone(phone, countryCode)
                 

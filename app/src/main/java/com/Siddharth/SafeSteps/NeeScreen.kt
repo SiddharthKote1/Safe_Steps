@@ -104,9 +104,9 @@ fun NeeScreen(
         }
     }
 
-    var menuExpanded by remember {
-        mutableStateOf(false)
-    }
+    var isStoppingSos by remember { mutableStateOf(false) }
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val dashboardBackgroundColor = if (activeSessionId != null && threatLevel == "CRITICAL") {
         Color(0xFF7F1D1D)
@@ -114,6 +114,86 @@ fun NeeScreen(
         Color(0xFFF8F9FC)
     }
 
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if(userName.isNotBlank()) userName.take(1).uppercase() else "U",
+                                color = Color.White,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = userName.ifBlank { "User" },
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+
+                NavigationDrawerItem(
+                    label = { Text("Profile") },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        navController.navigate("ProfileScreen")
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("Incident History") },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        navController.navigate("HistoryScreen")
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("Analytics Dashboard") },
+                    selected = false,
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        navController.navigate("AnalyticsScreen")
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                NavigationDrawerItem(
+                    label = { Text("Accessibility Settings") },
+                    selected = false,
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    onClick = {
+                        coroutineScope.launch { drawerState.close() }
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -129,66 +209,18 @@ fun NeeScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Box {
-
                 IconButton(
                     onClick = {
-                        menuExpanded = true
+                        coroutineScope.launch {
+                            if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                        }
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Menu,
-                        contentDescription = null
+                        contentDescription = "Open Navigation Drawer"
                     )
                 }
-
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = {
-                        menuExpanded = false
-                    }
-                ) {
-
-                    DropdownMenuItem(
-                        text = {
-                            Text("Accessibility Settings")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Settings,
-                                contentDescription = null
-                            )
-                        },
-                        onClick = {
-                            menuExpanded = false
-
-                            context.startActivity(
-                                Intent(
-                                    Settings.ACTION_ACCESSIBILITY_SETTINGS
-                                )
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text("Incident History")
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            navController.navigate("HistoryScreen")
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text("Analytics Dashboard")
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            navController.navigate("AnalyticsScreen")
-                        }
-                    )
-                }
-            }
 
             Text(
                 text = "SafeSteps",
@@ -196,22 +228,8 @@ fun NeeScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            IconButton(
-                onClick = { navController.navigate("ProfileScreen") }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if(userName.isNotBlank()) userName.take(1).uppercase() else "U",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            // Keeping this empty for symmetrical spacing since profile moved to drawer
+            Spacer(modifier = Modifier.size(36.dp))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -248,30 +266,8 @@ fun NeeScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Button(
-                            onClick = {
-                                val currentSessionId = activeSessionId
-                                coroutineScope.launch {
-                                    try {
-                                        RetrofitClient.apiService.endSession()
-                                        context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
-                                        context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
-                                        ThreatLevelManager.clearSession()
-                                        if (currentSessionId != null) {
-                                            navController.navigate("ReportScreen/${currentSessionId}")
-                                        }
-                                    } catch (e: Exception) {
-                                        // Error ending session
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-                        ) {
-                            Text("End SOS", color = threatColor, fontWeight = FontWeight.Bold)
-                        }
-
                         Button(
                             onClick = {
                                 navController.navigate("ChatScreen/${activeSessionId}")
@@ -347,11 +343,31 @@ fun NeeScreen(
         ) {
             PulsatingSOSButton(
                 isSosActive = activeSessionId != null,
+                isStopping = isStoppingSos,
                 onClick = {
                     if (activeSessionId == null) {
                         EmergencyHelper.contact1 = "$userCountryCode1$userPhone1"
                         EmergencyHelper.contact2 = "$userCountryCode2$userPhone2"
                         EmergencyHelper.sendSmsAndCall(context)
+                    } else {
+                        // End SOS logic moved here
+                        isStoppingSos = true
+                        val currentSessionId = activeSessionId
+                        coroutineScope.launch {
+                            kotlinx.coroutines.delay(500) // Small delay to show Red color
+                            try {
+                                RetrofitClient.apiService.endSession()
+                                context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
+                                context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
+                                ThreatLevelManager.clearSession()
+                                isStoppingSos = false
+                                if (currentSessionId != null) {
+                                    navController.navigate("ReportScreen/${currentSessionId}")
+                                }
+                            } catch (e: Exception) {
+                                isStoppingSos = false
+                            }
+                        }
                     }
                 }
             )
@@ -428,7 +444,8 @@ fun NeeScreen(
                 )
             }
         }
-    }
+    } // End Column
+    } // End ModalNavigationDrawer
 }
 
 @Composable
@@ -458,13 +475,14 @@ fun InfoRow(
 @Composable
 fun PulsatingSOSButton(
     isSosActive: Boolean,
+    isStopping: Boolean,
     onClick: () -> Unit
 ) {
     val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition()
 
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = if (isSosActive) 1.05f else 1.15f,
+        targetValue = if (isSosActive && !isStopping) 1.05f else 1.15f,
         animationSpec = androidx.compose.animation.core.infiniteRepeatable(
             animation = androidx.compose.animation.core.tween(1000),
             repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
@@ -480,13 +498,20 @@ fun PulsatingSOSButton(
         ), label = "pulse_alpha"
     )
 
-    val buttonColor = if (isSosActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    // Colors: Idle = Primary (Violet/Blue), Active = Green, Stopping = Red
+    val buttonColor = if (isStopping) {
+        MaterialTheme.colorScheme.error 
+    } else if (isSosActive) {
+        Color(0xFF22C55E) // Green
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
 
     Box(
         modifier = Modifier.size(240.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (!isSosActive) {
+        if (!isSosActive || isStopping) {
             Box(
                 modifier = Modifier
                     .size((240f * scale).dp)
@@ -538,7 +563,7 @@ fun PulsatingSOSButton(
             contentPadding = PaddingValues(0.dp)
         ) {
             Text(
-                text = "SOS",
+                text = if(isSosActive) "STOP" else "SOS",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black
             )

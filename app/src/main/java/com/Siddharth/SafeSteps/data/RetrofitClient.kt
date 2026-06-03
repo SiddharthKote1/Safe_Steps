@@ -8,7 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val BASE_URL =
-        "https://safesteps-backend-douj.onrender.com/"
+        // For local testing with physical device via adb reverse tcp:8000 tcp:8000
+        "http://localhost:8000/"
 
     private val okHttpClient =
         OkHttpClient.Builder()

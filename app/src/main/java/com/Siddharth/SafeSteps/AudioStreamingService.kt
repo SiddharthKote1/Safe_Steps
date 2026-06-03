@@ -61,7 +61,7 @@ class AudioStreamingService : Service() {
 
     private fun startStreaming(sessionId: String) {
         val client = OkHttpClient()
-        val url = "ws://safesteps-backend-douj.onrender.com/ws/audio/$sessionId"
+        val url = "ws://localhost:8000/ws/audio/$sessionId"
         val request = Request.Builder().url(url).build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
