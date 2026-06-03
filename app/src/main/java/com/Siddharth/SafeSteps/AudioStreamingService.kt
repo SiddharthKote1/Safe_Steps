@@ -53,6 +53,13 @@ class AudioStreamingService : Service() {
 
         startForeground(1, notification)
 
+        // Launch the floating SOS assistant popup (live transcript + AI voice replies),
+        // if the user has granted the "Display over other apps" permission. Starting it from
+        // this already-foreground service avoids background-start restrictions.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || android.provider.Settings.canDrawOverlays(this)) {
+            startService(Intent(this, OverlayService::class.java))
+        }
+
         startStreaming(sessionId)
 
         return START_STICKY
@@ -60,7 +67,8 @@ class AudioStreamingService : Service() {
 
     private fun startStreaming(sessionId: String) {
         val client = OkHttpClient()
-        val url = "ws://safesteps-backend-douj.onrender.com/ws/audio/$sessionId"
+        // wss:// (TLS) — the backend is served over HTTPS on Render; plain ws:// fails the upgrade.
+        val url = "wss://safesteps-backend-douj.onrender.com/ws/audio/$sessionId"
         val request = Request.Builder().url(url).build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
@@ -73,9 +81,39 @@ class AudioStreamingService : Service() {
                 Log.d(TAG, "Message from Server: $text")
                 try {
                     val json = org.json.JSONObject(text)
+
+                    // Feed the live SOS chat (shown + spoken by the overlay):
+                    // the user's transcribed words, then the AI's guidance reply.
+                    val transcript = json.optString("transcript", "")
+                    if (transcript.isNotBlank()) {
+                        com.Siddharth.SafeSteps.SosConversationState.addUser(transcript)
+                    }
+                    val guidance = json.optString("guidance", "")
+                    if (guidance.isNotBlank()) {
+                        com.Siddharth.SafeSteps.SosConversationState.addAi(guidance)
+                    }
+
                     if (json.has("threat_level")) {
-                        val level = json.getString("threat_level")
-                        com.Siddharth.SafeSteps.ThreatLevelManager.updateThreatLevel(level)
+                        val level = json.optString("threat_level", "LOW")
+                        val isSafe = json.optBoolean("is_safe", false)
+
+                        // Build a short situation summary for the SMS.
+                        // Prefer a backend-provided sms_summary; else use reasons; else incident_type.
+                        val smsSummary = json.optString("sms_summary", "")
+                        val reasons = json.optString("reasons", "")
+                        val incident = json.optString("incident_type", "")
+                        val genericIncident = incident.isBlank() ||
+                            incident.equals("None", true) || incident.equals("Unknown", true)
+                        val raw = when {
+                            smsSummary.isNotBlank() -> smsSummary
+                            reasons.isNotBlank() -> reasons
+                            !genericIncident -> incident
+                            else -> ""
+                        }
+                        // Keep it SMS-friendly (~140 chars).
+                        val summary = if (raw.length > 140) raw.take(137).trimEnd() + "…" else raw
+
+                        com.Siddharth.SafeSteps.ThreatLevelManager.onThreatUpdate(level, summary, isSafe)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to parse websocket message", e)
@@ -139,6 +177,8 @@ class AudioStreamingService : Service() {
         audioRecord?.release()
         audioRecord = null
         webSocket?.close(1000, "Service destroyed")
+        // Don't leave the SOS popup floating if audio streaming ends.
+        stopService(Intent(this, OverlayService::class.java))
     }
 
     private fun createNotificationChannel() {

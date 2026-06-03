@@ -39,6 +39,7 @@ object EmergencyHelper {
                 val sessionId = sessionResponse.session_id
                 com.Siddharth.SafeSteps.ThreatLevelManager.setSessionId(sessionId)
                 com.Siddharth.SafeSteps.ThreatLevelManager.updateThreatLevel("LOW") // Default
+                com.Siddharth.SafeSteps.SosConversationState.clear() // fresh chat for this session
                 
                 
                 // 2. Start Audio Streaming Service

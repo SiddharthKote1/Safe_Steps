@@ -113,7 +113,7 @@ class LocationService : Service(), KoinComponent {
                     )
                     
                     // Periodic 20-second SMS update
-                    if (com.Siddharth.SafeSteps.ThreatLevelManager.activeSessionId != null) {
+                    if (com.Siddharth.SafeSteps.ThreatLevelManager.activeSessionId.value != null) {
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastSmsTime >= 20000) {
                             lastSmsTime = currentTime
@@ -121,13 +121,33 @@ class LocationService : Service(), KoinComponent {
                             val user = preferencesHelper.getUserData()
                             val c1 = EmergencyHelper.contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())
                             val c2 = EmergencyHelper.contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())
-                            
+
                             if (c1.isNotEmpty() && c2.isNotEmpty()) {
-                                val msg = "UPDATE: I am moving! My current location is: https://maps.google.com/?q=${location.latitude},${location.longitude}"
+                                val mapsUrl = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
+
+                                // If the AI flagged an elevated threat, send the situation-aware message
+                                // for up to 5 cycles (re-armed whenever the user speaks a new update);
+                                // otherwise fall back to the normal location-only update.
+                                val msg = if (com.Siddharth.SafeSteps.ThreatLevelManager.consumeOneModifiedSms()) {
+                                    val level = com.Siddharth.SafeSteps.ThreatLevelManager.currentLevel ?: "HIGH"
+                                    val summary = com.Siddharth.SafeSteps.ThreatLevelManager.situationSummary.value.orEmpty()
+                                    val name = user?.name?.takeIf { it.isNotBlank() } ?: "Someone"
+                                    if (summary.isNotBlank())
+                                        "[$level] $name needs help — $summary. Live location: $mapsUrl"
+                                    else
+                                        "[$level] $name needs help. Live location: $mapsUrl"
+                                } else {
+                                    "UPDATE: I am moving! My current location is: $mapsUrl"
+                                }
+
                                 val smsManager = android.telephony.SmsManager.getDefault()
                                 smsManager.sendTextMessage(c1, null, msg, null, null)
                                 smsManager.sendTextMessage(c2, null, msg, null, null)
-                                android.util.Log.d("LocationService", "Sent periodic 20s SMS update to emergency contacts.")
+                                android.util.Log.d(
+                                    "LocationService",
+                                    "Sent 20s SMS update (level=${com.Siddharth.SafeSteps.ThreatLevelManager.currentLevel}, " +
+                                        "modifiedRemaining=${com.Siddharth.SafeSteps.ThreatLevelManager.modifiedSmsRemaining.get()})."
+                                )
                             }
                         }
                     }

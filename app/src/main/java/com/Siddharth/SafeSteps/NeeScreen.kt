@@ -37,6 +37,10 @@ import com.Siddharth.SafeSteps.ThreatLevelManager
 import com.Siddharth.SafeSteps.data.RetrofitClient
 import kotlinx.coroutines.launch
 
+// Request the "Display over other apps" permission at most once per app process,
+// so the live SOS assistant popup can be shown. Avoids nagging on every screen entry.
+private var overlayPromptShown = false
+
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class
@@ -101,6 +105,22 @@ fun NeeScreen(
 
             EmergencyHelper.contact2 =
                 "$userCountryCode2$userPhone2"
+
+            // Ask once for "Display over other apps" so the live SOS popup can appear.
+            if (!overlayPromptShown &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                !Settings.canDrawOverlays(context)
+            ) {
+                overlayPromptShown = true
+                runCatching {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            android.net.Uri.parse("package:${context.packageName}")
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+            }
         }
     }
 
@@ -251,7 +271,10 @@ fun NeeScreen(
                                     try {
                                         RetrofitClient.apiService.endSession()
                                         context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
+                                        context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
+                                        context.stopService(Intent(context, com.Siddharth.SafeSteps.OverlayService::class.java))
                                         ThreatLevelManager.clearSession()
+                                        com.Siddharth.SafeSteps.SosConversationState.clear()
                                         if (currentSessionId != null) {
                                             navController.navigate("ReportScreen/${currentSessionId}")
                                         }
@@ -347,13 +370,18 @@ fun NeeScreen(
                                 // Trigger SOS API
                                 val response = RetrofitClient.apiService.startSession()
                                 ThreatLevelManager.setSessionId(response.session_id)
+                                com.Siddharth.SafeSteps.SosConversationState.clear() // fresh chat for this session
                                 
                                 // Start Audio Streaming & Location Service
                                 val audioIntent = Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java)
                                 audioIntent.putExtra("SESSION_ID", response.session_id)
                                 context.startService(audioIntent)
-                                
-                                // Location tracking starts automatically upon SessionManager/ThreatLevel changes in background
+
+                                // Start Location Service — it hosts the recurring 20-second
+                                // threat-aware SMS loop, so it MUST run for the feature to work.
+                                val locationIntent = Intent(context, com.Siddharth.SafeSteps.LocationService::class.java)
+                                context.startService(locationIntent)
+                                ThreatLevelManager.updateThreatLevel("LOW")
                             } catch (e: Exception) {
                                 // Handle error
                             }
