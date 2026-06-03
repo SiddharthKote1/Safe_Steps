@@ -31,9 +31,9 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     private fun handleVolumeKey(event: KeyEvent): Boolean {
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
-                volumeDownPressed = true
-
-                if (volumeDownPressed && checkJob == null) {
+                if (!volumeDownPressed) {
+                    volumeDownPressed = true
+                    checkJob?.cancel()
                     checkJob = CoroutineScope(Dispatchers.Default).launch {
                         delay(triggerDuration)
                         if (volumeDownPressed) {

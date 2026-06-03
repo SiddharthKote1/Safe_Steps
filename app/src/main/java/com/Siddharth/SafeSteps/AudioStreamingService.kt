@@ -47,8 +47,9 @@ class AudioStreamingService : Service() {
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Emergency SOS Active")
             .setContentText("Streaming audio to emergency contacts...")
-            //.setSmallIcon(R.drawable.safes) // Replace with a valid icon
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
             .build()
 
         startForeground(1, notification)
@@ -106,9 +107,8 @@ class AudioStreamingService : Service() {
         val audioFormat = AudioFormat.ENCODING_PCM_16BIT
         val minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
-        // 256ms chunk size as per backend requirements
-        val chunkSamples = 4096 
-        val bufferSize = chunkSamples * 2 // 16-bit = 2 bytes
+        // 256ms chunk size (4096 bytes) as per backend requirements
+        val bufferSize = 4096 
 
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
