@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.telephony.SmsManager
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -23,8 +24,8 @@ object EmergencyHelper {
         val c1 = contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())
         val c2 = contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())
         
-        if (user == null || c1.isEmpty() || c2.isEmpty()) {
-            Toast.makeText(context, "User data or contacts not available", Toast.LENGTH_SHORT).show()
+        if (user == null || c1.isEmpty()) {
+            Toast.makeText(context, "User data or primary contact not configured", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -39,7 +40,6 @@ object EmergencyHelper {
                 val sessionId = sessionResponse.session_id
                 com.Siddharth.SafeSteps.ThreatLevelManager.setSessionId(sessionId)
                 com.Siddharth.SafeSteps.ThreatLevelManager.updateThreatLevel("LOW") // Default
-                
                 
                 // 2. Start Audio Streaming Service
                 val serviceIntent = Intent(context, AudioStreamingService::class.java).apply {
@@ -70,12 +70,22 @@ object EmergencyHelper {
                 )
 
                 val locationUrl = locationResponse.maps_link ?: "https://maps.google.com/?q=$lat,$lng"
-                val message = " \"EMERGENCY! I am ${user.name}. My location: $locationUrl\"  \n"
+                val message = "EMERGENCY! I am ${user.name}. My location: $locationUrl"
 
                 // 5. Send SMS Local Fallback
-                val smsManager = SmsManager.getDefault()
-                smsManager.sendTextMessage(c1, null, message, null, null)
-                smsManager.sendTextMessage(c2, null, message, null, null)
+                val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    context.getSystemService(SmsManager::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    SmsManager.getDefault()
+                }
+                if (c1.isNotEmpty()) {
+                    smsManager.sendTextMessage(c1, null, message, null, null)
+                }
+                if (c2.isNotEmpty()) {
+                    smsManager.sendTextMessage(c2, null, message, null, null)
+                }
+                
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Emergency SOS Active & SMS sent", Toast.LENGTH_SHORT).show()
                 }

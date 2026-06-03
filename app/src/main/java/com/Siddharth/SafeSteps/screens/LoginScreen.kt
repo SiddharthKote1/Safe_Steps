@@ -1,38 +1,28 @@
 package com.Siddharth.SafeSteps.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.Siddharth.SafeSteps.R
+import com.Siddharth.SafeSteps.viewmodel.AuthState
 import com.Siddharth.SafeSteps.viewmodel.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -41,9 +31,31 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel = koinViewModel()
 ) {
-    var phone by remember { mutableStateOf("") }
+    var phoneOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedCountry by remember { mutableStateOf(defaultCountries[0]) }
+
+    val authState by authViewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                navController.navigate(Routes.PERMISSION_SCREEN) {
+                    popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
+                }
+                authViewModel.resetState()
+            }
+            is AuthState.Error -> {
+                Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_LONG).show()
+                authViewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
+    val isEmail = phoneOrEmail.contains("@") || phoneOrEmail.any { it.isLetter() }
 
     Box(
         modifier = Modifier
@@ -86,20 +98,31 @@ fun LoginScreen(
             
             Spacer(modifier = Modifier.height(48.dp))
             
-            // Phone Field
+            // Input Field Header
             Text(
-                text = "Phone Number",
+                text = if (isEmail) "Email Address" else "Phone Number or Email",
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.DarkGray,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            PhoneInputFieldWithCountry(
-                phoneNumber = phone,
-                onPhoneNumberChange = { if(it.length <= 15) phone = it },
-                selectedCountry = selectedCountry,
-                onCountryChange = { selectedCountry = it }
-            )
+            
+            if (isEmail) {
+                CustomInputField(
+                    value = phoneOrEmail,
+                    onValueChange = { phoneOrEmail = it },
+                    icon = Icons.Default.Email,
+                    placeholder = "Enter email address",
+                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
+                )
+            } else {
+                PhoneInputFieldWithCountry(
+                    phoneNumber = phoneOrEmail,
+                    onPhoneNumberChange = { phoneOrEmail = it },
+                    selectedCountry = selectedCountry,
+                    onCountryChange = { selectedCountry = it }
+                )
+            }
             
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -119,11 +142,12 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(40.dp))
             
             // Login Button
+            val isButtonEnabled = phoneOrEmail.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading
             Button(
                 onClick = { 
-                    if(phone.isNotBlank() && password.isNotBlank()) {
-                        authViewModel.login(selectedCountry.code + phone, password)
-                        navController.navigate(Routes.PERMISSION_SCREEN)
+                    if (isButtonEnabled) {
+                        val loginUsername = if (isEmail) phoneOrEmail else (selectedCountry.code + phoneOrEmail)
+                        authViewModel.login(loginUsername, password)
                     }
                 },
                 modifier = Modifier
@@ -133,14 +157,19 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                enabled = isButtonEnabled
             ) {
-                Text(
-                    text = "Sign In",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                if (authState is AuthState.Loading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(
+                        text = "Sign In",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.weight(1f))
@@ -165,73 +194,6 @@ fun LoginScreen(
                     modifier = Modifier
                         .clickable { navController.navigate(Routes.REGISTER_SCREEN) }
                         .padding(4.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomPasswordField(
-    value: String,
-    onValueChange: (String) -> Unit
-) {
-    var isFocused by remember { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .background(Color(0xFFF3F4F6), RoundedCornerShape(16.dp))
-            .border(
-                width = if (isFocused) 2.dp else 0.dp,
-                color = if (isFocused) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                tint = if (isFocused) MaterialTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            Box(modifier = Modifier.weight(1f)) {
-                if (value.isEmpty() && !isFocused) {
-                    Text("Enter your password", color = Color.Gray, fontSize = 16.sp)
-                }
-                
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    textStyle = TextStyle(
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Medium
-                    ),
-                    singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { isFocused = it.isFocused }
-                )
-            }
-            
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = "Toggle Password Visibility",
-                    tint = Color.Gray
                 )
             }
         }

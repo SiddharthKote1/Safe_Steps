@@ -30,7 +30,7 @@ val appModule = module {
 
     // ViewModels
     viewModel { AnalyticsViewModel(get()) }
-    viewModel { AuthViewModel(get()) }
+    viewModel { AuthViewModel(get(), get()) }
     viewModel { ContactsViewModel(get()) }
     viewModel { ConversationViewModel(get()) }
     viewModel { EmergencyViewModel(get()) }

@@ -108,10 +108,16 @@ fun NeeScreen(
         mutableStateOf(false)
     }
 
+    val dashboardBackgroundColor = if (activeSessionId != null && threatLevel == "CRITICAL") {
+        Color(0xFF7F1D1D)
+    } else {
+        Color(0xFFF8F9FC)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FC))
+            .background(dashboardBackgroundColor)
             .padding(16.dp)
     ) {
 
@@ -212,10 +218,10 @@ fun NeeScreen(
 
         if (activeSessionId != null) {
             val threatColor = when(threatLevel) {
-                "LOW" -> Color(0xFF3FB950)
-                "MEDIUM" -> Color(0xFFF0A030)
-                "HIGH" -> Color(0xFFF85149)
-                "CRITICAL" -> Color(0xFFFF4444)
+                "LOW" -> com.Siddharth.SafeSteps.ui.theme.ThreatLow
+                "MEDIUM" -> com.Siddharth.SafeSteps.ui.theme.ThreatMedium
+                "HIGH" -> com.Siddharth.SafeSteps.ui.theme.ThreatHigh
+                "CRITICAL" -> Color(0xFF991B1B)
                 else -> Color.Gray
             }
             Card(
@@ -251,6 +257,7 @@ fun NeeScreen(
                                     try {
                                         RetrofitClient.apiService.endSession()
                                         context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
+                                        context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
                                         ThreatLevelManager.clearSession()
                                         if (currentSessionId != null) {
                                             navController.navigate("ReportScreen/${currentSessionId}")
@@ -342,22 +349,9 @@ fun NeeScreen(
                 isSosActive = activeSessionId != null,
                 onClick = {
                     if (activeSessionId == null) {
-                        coroutineScope.launch {
-                            try {
-                                // Trigger SOS API
-                                val response = RetrofitClient.apiService.startSession()
-                                ThreatLevelManager.setSessionId(response.session_id)
-                                
-                                // Start Audio Streaming & Location Service
-                                val audioIntent = Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java)
-                                audioIntent.putExtra("SESSION_ID", response.session_id)
-                                context.startService(audioIntent)
-                                
-                                // Location tracking starts automatically upon SessionManager/ThreatLevel changes in background
-                            } catch (e: Exception) {
-                                // Handle error
-                            }
-                        }
+                        EmergencyHelper.contact1 = "$userCountryCode1$userPhone1"
+                        EmergencyHelper.contact2 = "$userCountryCode2$userPhone2"
+                        EmergencyHelper.sendSmsAndCall(context)
                     }
                 }
             )
