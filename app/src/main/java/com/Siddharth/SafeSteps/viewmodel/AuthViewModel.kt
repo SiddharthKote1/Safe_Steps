@@ -51,7 +51,8 @@ class AuthViewModel(
                     // Retrieve metadata to populate local user profile
                     val metadata = response.user?.user_metadata
                     val fullName = metadata?.get("full_name") as? String ?: "User"
-                    val rawPhone = response.user?.phone ?: formattedPhone
+                    val metadataPhone = metadata?.get("phone") as? String
+                    val rawPhone = response.user?.phone ?: metadataPhone ?: formattedPhone
                     
                     var countryCode = "+91"
                     var localPhone = rawPhone

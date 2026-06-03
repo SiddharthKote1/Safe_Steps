@@ -8,8 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val BASE_URL =
-        // For local testing with physical device via adb reverse tcp:8000 tcp:8000
-        "http://localhost:8000/"
+        // For local testing with physical device via adb reverse tcp:8080 tcp:8080
+        "http://localhost:8080/"
 
     private val okHttpClient =
         OkHttpClient.Builder()

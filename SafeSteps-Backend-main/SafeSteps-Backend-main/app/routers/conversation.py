@@ -42,11 +42,21 @@ async def handle_message(
             role = "user" if t.speaker == "User" else "assistant"
             history.append({"role": role, "content": t.text})
 
+    # Get latest location
+    location_context = None
+    if session and session.locations:
+        last_loc = session.locations[-1]
+        location_context = {
+            "latitude": last_loc.latitude,
+            "longitude": last_loc.longitude
+        }
+
     ai_resp = await ai_service.generate_safety_response(
         message=payload.message,
         threat_level=threat_level,
         history=history,
         language=language,
+        location_context=location_context
     )
 
     if session:
@@ -59,8 +69,16 @@ async def handle_message(
         ))
         await session.save()
 
+    questions = ai_resp.get("questions", [])
+    if isinstance(questions, str):
+        questions = [questions]
+        
+    recommendations = ai_resp.get("recommendations", [])
+    if isinstance(recommendations, str):
+        recommendations = [recommendations]
+
     return ConversationResponse(
         guidance=ai_resp.get("guidance", ""),
-        questions=ai_resp.get("questions", []),
-        recommendations=ai_resp.get("recommendations", []),
+        questions=questions,
+        recommendations=recommendations,
     )

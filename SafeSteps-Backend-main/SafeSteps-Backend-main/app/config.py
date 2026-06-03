@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     MONGODB_DB_NAME: str = "safesteps"
 
     # AI APIs
+    OPENROUTER_API_KEY: str = Field(default="")
     GROQ_API_KEY: str = Field(default="")
     SARVAM_API_KEY: str = Field(default="")
     GEMINI_API_KEY: str = Field(default="")

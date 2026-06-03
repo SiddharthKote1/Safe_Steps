@@ -55,7 +55,9 @@ fun CustomSplashScreen(navController: NavController) {
             !preferencesHelper.isAppSetupDone() -> Routes.PERMISSION_SCREEN
             !isUserDataComplete -> Routes.SETUP_CONTACTS
             else -> {
-                "NeeScreen/${Uri.encode(user!!.name)}/${Uri.encode(user.countryCode1)}/${Uri.encode(user.countryCode2)}/${Uri.encode(user.phone1)}/${Uri.encode(user.phone2)}"
+                val safeCountry2 = user!!.countryCode2.ifBlank { "none" }
+                val safePhone2 = user.phone2.ifBlank { "none" }
+                "NeeScreen/${Uri.encode(user.name)}/${Uri.encode(user.countryCode1)}/${Uri.encode(safeCountry2)}/${Uri.encode(user.phone1)}/${Uri.encode(safePhone2)}"
             }
         }
 

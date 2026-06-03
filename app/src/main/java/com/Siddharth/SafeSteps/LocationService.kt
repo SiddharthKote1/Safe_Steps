@@ -101,7 +101,7 @@ class LocationService : Service(), KoinComponent {
         startLocationUpdates()
         startSmsLoop()
 
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun startLocationUpdates() {
@@ -123,8 +123,10 @@ class LocationService : Service(), KoinComponent {
         smsJob?.cancel()
         smsJob = scope.launch {
             while (isActive) {
-                delay(20000) // Trigger every 20 seconds
-                sendEmergencySms()
+                delay(60000) // Trigger every 60 seconds
+                if (com.Siddharth.SafeSteps.ThreatLevelManager.activeSessionId.value != null) {
+                    sendEmergencySms()
+                }
             }
         }
     }

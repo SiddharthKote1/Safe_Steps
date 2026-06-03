@@ -10,7 +10,7 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
 
     private var volumeDownPressed = false
     private var checkJob: Job? = null
-    private val triggerDuration = 3000L // 3 seconds long press
+    private val triggerDuration = 5000L // 5 seconds long press
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Not used
@@ -50,7 +50,7 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
             }
         }
 
-        return volumeDownPressed
+        return false // Do not consume the event, let the user change media volume!
     }
 
     private fun triggerEmergencyAction() {

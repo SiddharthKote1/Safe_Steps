@@ -44,12 +44,13 @@ _LANGUAGE_NAMES = {
 # ── Prompts ────────────────────────────────────────────────────────────────────
 
 _SAFETY_SYSTEM_PROMPT = (
-    "You are SafeSteps AI, an advanced multilingual personal safety assistant. "
-    "You receive safety messages or descriptions of emergency situations. "
-    "Respond in a calm, clear, and reassuring tone. "
+    "You are SafeSteps AI, an elite Emergency Dispatch Responder and advanced multilingual personal safety assistant. "
+    "You receive distress messages and descriptions of emergency situations from users. "
+    "Respond in a calm, clear, and highly authoritative yet reassuring tone, as a professional 911 dispatcher would. "
     "CRITICAL LANGUAGE RULE: You MUST detect the language of the user's message and reply "
     "in that exact same language. If the user writes in Hindi, respond fully in Hindi. "
     "If in Marathi, respond fully in Marathi. If in English, respond in English. "
+    "If the user's location is provided, give them concrete, step-by-step spatial guidance or routing advice (e.g., 'Move north towards the main road'). "
     "Provide immediate guidance, ask clarifying safety questions, and give action recommendations. "
     "Return output strictly matching the structured JSON schema."
 )
@@ -60,18 +61,19 @@ _REPORT_SYSTEM_PROMPT = (
     "Conform strictly to the JSON incident report schema."
 )
 
-_GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-_GROQ_MODEL = "llama-3.1-8b-instant"
+_GROQ_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+_GROQ_MODEL = "meta-llama/llama-3.1-8b-instruct"
 
 
 class AIService:
     def __init__(self):
-        # Groq client (primary — Gemma2-9b-it)
-        self._groq_ready = bool(settings.GROQ_API_KEY)
+        # Groq/OpenRouter client
+        self._api_key = settings.OPENROUTER_API_KEY or settings.GROQ_API_KEY
+        self._groq_ready = bool(self._api_key)
         if self._groq_ready:
-            Logger.info(f"AI Service: Groq/{_GROQ_MODEL} client ready.")
+            Logger.info(f"AI Service: OpenRouter/Groq ({_GROQ_MODEL}) client ready.")
         else:
-            Logger.warn("GROQ_API_KEY not set. Groq/Gemma fallback unavailable.")
+            Logger.warn("OPENROUTER_API_KEY not set. OpenRouter fallback unavailable.")
 
         # Gemini client (secondary)
         self._gemini_client = None
@@ -87,16 +89,22 @@ class AIService:
     # ── Public API ─────────────────────────────────────────────────────────────
 
     @traceable(name="Generate Safety Response", run_type="llm")
-    async def generate_safety_response(self, message: str, threat_level: str = "LOW", history: list = None, language: str = "en-IN") -> dict:
+    async def generate_safety_response(self, message: str, threat_level: str = "LOW", history: list = None, language: str = "en-IN", location_context: dict = None) -> dict:
         """
         Returns: { "guidance": str, "questions": list[str], "recommendations": list[str] }
         Tries Groq/Gemma first, then Gemini, then mock.
         language: BCP-47 code (e.g. "hi-IN", "mr-IN", "en-IN") — LLM is instructed to reply in this language.
         """
         lang_name = _LANGUAGE_NAMES.get(language, "the same language as the user's message")
+        
+        location_str = "Location Unknown"
+        if location_context:
+            location_str = f"Latitude: {location_context.get('latitude', 'Unknown')}, Longitude: {location_context.get('longitude', 'Unknown')}"
+
         prompt = (
             f"RESPOND IN: {lang_name}\n"
             f"Current Session Threat Level: {threat_level}\n"
+            f"User Location: {location_str}\n"
             f"User Message: {message}"
         )
 
@@ -151,8 +159,10 @@ class AIService:
 
     async def _call_groq(self, system: str, user: str, schema_cls: type) -> dict:
         """POST to Groq OpenAI-compatible endpoint with JSON mode."""
-        field_names = list(schema_cls.model_fields.keys())
-        schema_hint = f"Respond ONLY with a valid JSON object with exactly these keys: {field_names}"
+        schema_hint = (
+            f"Respond ONLY with a valid JSON object matching this exact schema:\n"
+            f"{json.dumps(schema_cls.model_json_schema())}"
+        )
 
         payload = {
             "model": _GROQ_MODEL,
@@ -165,8 +175,10 @@ class AIService:
             "max_tokens": 1024
         }
         headers = {
-            "Authorization": f"Bearer {settings.GROQ_API_KEY}",
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://safesteps.ai",
+            "X-Title": "SafeSteps Emergency AI"
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:

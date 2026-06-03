@@ -107,9 +107,9 @@ async def end_session(
         EmergencySession.status == "active",
     )
     if not session:
-        session = await EmergencySession.find_one(
+        session = await EmergencySession.find(
             EmergencySession.user_id == current_user.id
-        ).sort(-EmergencySession.created_at)
+        ).sort(-EmergencySession.created_at).first_or_none()
         if not session:
             raise HTTPException(status_code=404, detail="No emergency session found")
     else:

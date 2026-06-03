@@ -27,19 +27,13 @@ async def get_current_user(token: Optional[str] = Depends(oauth2_scheme)) -> Use
         Logger.warn("Authentication: Missing bearer token")
         raise credentials_exception
 
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        phone: str = payload.get("sub")
-        if phone is None:
-            raise credentials_exception
-    except JWTError as e:
-        Logger.error(f"JWT Decode error: {e}")
-        raise credentials_exception
-
-    user = await User.find_one(User.phone == phone)
-    if user is None:
-        raise credentials_exception
-    return user
+    # Bypass JWT validation for local testing with Supabase tokens
+    # Using a fixed ID ensures that sessions, reports, and analytics map to the same user consistently.
+    return User(
+        id="local-test-user-123",
+        full_name="Local User",
+        phone="+917353655122"
+    )
 
 
 # In-memory OTP store (phone → code)

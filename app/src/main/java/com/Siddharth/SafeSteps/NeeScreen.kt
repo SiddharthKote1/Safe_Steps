@@ -353,19 +353,22 @@ fun NeeScreen(
                         // End SOS logic moved here
                         isStoppingSos = true
                         val currentSessionId = activeSessionId
+                        // STOP SERVICES IMMEDIATELY BEFORE ANY NETWORK CALLS
+                        context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
+                        context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
+                        ThreatLevelManager.clearSession()
+
                         coroutineScope.launch {
                             kotlinx.coroutines.delay(500) // Small delay to show Red color
                             try {
                                 RetrofitClient.apiService.endSession()
-                                context.stopService(Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java))
-                                context.stopService(Intent(context, com.Siddharth.SafeSteps.LocationService::class.java))
-                                ThreatLevelManager.clearSession()
+                            } catch (e: Exception) {
+                                // Ignore backend failure, the local app must stop
+                            } finally {
                                 isStoppingSos = false
                                 if (currentSessionId != null) {
                                     navController.navigate("ReportScreen/${currentSessionId}")
                                 }
-                            } catch (e: Exception) {
-                                isStoppingSos = false
                             }
                         }
                     }
@@ -498,13 +501,13 @@ fun PulsatingSOSButton(
         ), label = "pulse_alpha"
     )
 
-    // Colors: Idle = Primary (Violet/Blue), Active = Green, Stopping = Red
+    // Colors: Idle = Red, Active = Green, Stopping = Dark Red
     val buttonColor = if (isStopping) {
-        MaterialTheme.colorScheme.error 
+        androidx.compose.ui.graphics.Color(0xFF991B1B) // Dark Red
     } else if (isSosActive) {
-        Color(0xFF22C55E) // Green
+        androidx.compose.ui.graphics.Color(0xFF22C55E) // Green
     } else {
-        MaterialTheme.colorScheme.primary
+        androidx.compose.material3.MaterialTheme.colorScheme.error // Red
     }
 
     Box(

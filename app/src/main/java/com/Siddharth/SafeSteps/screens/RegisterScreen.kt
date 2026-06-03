@@ -187,10 +187,19 @@ fun RegisterScreen(
                 onValueChange = { password = it }
             )
             
+            if (password.isNotEmpty() && password.length < 6) {
+                Text(
+                    text = "Password must be at least 6 characters",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                )
+            }
+            
             Spacer(modifier = Modifier.height(28.dp))
             
             // Register Button
-            val isButtonEnabled = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && isPhoneValid && password.isNotBlank() && authState !is AuthState.Loading
+            val isButtonEnabled = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && isPhoneValid && password.length >= 6 && authState !is AuthState.Loading
             Button(
                 onClick = { 
                     if (isButtonEnabled) {

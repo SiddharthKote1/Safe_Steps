@@ -5,7 +5,7 @@ from app.utils.logger import Logger
 
 _OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 _OPENROUTER_MODEL = "meta-llama/llama-3.1-8b-instruct"
-_OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+_OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 
 _SYSTEM_PROMPT = """You are SafeSteps AI — a real-time emergency threat analyzer embedded in a personal safety app.
 

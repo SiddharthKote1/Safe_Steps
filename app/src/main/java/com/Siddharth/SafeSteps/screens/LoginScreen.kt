@@ -33,9 +33,8 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel = koinViewModel()
 ) {
-    var phoneOrEmail by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedCountry by remember { mutableStateOf(defaultCountries[0]) }
 
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
@@ -67,8 +66,7 @@ fun LoginScreen(
         }
     }
 
-    val isEmail = phoneOrEmail.contains("@") || phoneOrEmail.any { it.isLetter() }
-
+    // Email is required since Supabase account is created with Email
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -112,29 +110,20 @@ fun LoginScreen(
             
             // Input Field Header
             Text(
-                text = if (isEmail) "Email Address" else "Phone Number or Email",
+                text = "Email Address",
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.DarkGray,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             
-            if (isEmail) {
-                CustomInputField(
-                    value = phoneOrEmail,
-                    onValueChange = { phoneOrEmail = it },
-                    icon = Icons.Default.Email,
-                    placeholder = "Enter email address",
-                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
-                )
-            } else {
-                PhoneInputFieldWithCountry(
-                    phoneNumber = phoneOrEmail,
-                    onPhoneNumberChange = { phoneOrEmail = it },
-                    selectedCountry = selectedCountry,
-                    onCountryChange = { selectedCountry = it }
-                )
-            }
+            CustomInputField(
+                value = email,
+                onValueChange = { email = it },
+                icon = Icons.Default.Email,
+                placeholder = "Enter your registered email",
+                keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
+            )
             
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -151,10 +140,10 @@ fun LoginScreen(
                 onValueChange = { password = it }
             )
             
-            val isPhoneValid = isEmail || phoneOrEmail.length == 10
-            if (!isEmail && phoneOrEmail.isNotEmpty() && !isPhoneValid) {
+            val isEmailValid = email.contains("@") && email.contains(".")
+            if (email.isNotEmpty() && !isEmailValid) {
                 Text(
-                    text = "Invalid number: Must be exactly 10 digits",
+                    text = "Please enter a valid email address",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 8.dp, start = 4.dp)
@@ -164,12 +153,11 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(40.dp))
             
             // Login Button
-            val isButtonEnabled = phoneOrEmail.isNotBlank() && password.isNotBlank() && isPhoneValid && authState !is AuthState.Loading
+            val isButtonEnabled = email.isNotBlank() && password.isNotBlank() && isEmailValid && authState !is AuthState.Loading
             Button(
                 onClick = { 
                     if (isButtonEnabled) {
-                        val loginUsername = if (isEmail) phoneOrEmail else (selectedCountry.code + phoneOrEmail)
-                        authViewModel.login(loginUsername, password)
+                        authViewModel.login(email, password)
                     }
                 },
                 modifier = Modifier

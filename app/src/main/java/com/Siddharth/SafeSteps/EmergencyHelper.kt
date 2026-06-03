@@ -21,8 +21,8 @@ object EmergencyHelper {
     fun sendSmsAndCall(context: Context) {
         val user = PreferencesHelper(context).getUserData()
         
-        val c1 = contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())
-        val c2 = contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())
+        val c1 = (contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())).replace(" ", "")
+        val c2 = (contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())).replace(" ", "")
         
         if (user == null || c1.isEmpty()) {
             Toast.makeText(context, "User data or primary contact not configured", Toast.LENGTH_SHORT).show()
@@ -32,6 +32,20 @@ object EmergencyHelper {
         // Ensure LocationService is started as foreground service so recurring SMS can work
         val locationIntent = Intent(context, LocationService::class.java)
         ContextCompat.startForegroundService(context, locationIntent)
+
+        // Execute Phone Call IMMEDIATELY (Do not wait for location or backend)
+        if (c1.isNotEmpty() && c1 != "none") {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    val callIntent = Intent(Intent.ACTION_CALL)
+                    callIntent.data = Uri.parse("tel:$c1")
+                    callIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(callIntent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -79,10 +93,10 @@ object EmergencyHelper {
                     @Suppress("DEPRECATION")
                     SmsManager.getDefault()
                 }
-                if (c1.isNotEmpty()) {
+                if (c1.isNotEmpty() && c1 != "none") {
                     smsManager.sendTextMessage(c1, null, message, null, null)
                 }
-                if (c2.isNotEmpty()) {
+                if (c2.isNotEmpty() && c2 != "none") {
                     smsManager.sendTextMessage(c2, null, message, null, null)
                 }
                 
@@ -90,18 +104,6 @@ object EmergencyHelper {
                     Toast.makeText(context, "Emergency SOS Active & SMS sent", Toast.LENGTH_SHORT).show()
                 }
 
-                // 6. Make emergency call
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                    val intent = Intent(Intent.ACTION_CALL, Uri.fromParts("tel", c1, null))
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    context.startActivity(intent)
-                } else if (context is Activity) {
-                    ActivityCompat.requestPermissions(
-                        context,
-                        arrayOf(Manifest.permission.CALL_PHONE),
-                        1
-                    )
-                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Failed to start emergency session: ${e.message}", Toast.LENGTH_LONG).show()

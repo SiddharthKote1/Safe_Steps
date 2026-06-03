@@ -81,9 +81,9 @@ fun NavGraph(modifier: Modifier = Modifier) {
             NeeScreen(
                 name = backStackEntry.arguments?.getString("name") ?: "",
                 countryCode1 = backStackEntry.arguments?.getString("countryCode1") ?: "",
-                countryCode2 = backStackEntry.arguments?.getString("countryCode2") ?: "",
+                countryCode2 = (backStackEntry.arguments?.getString("countryCode2") ?: "").let { if (it == "none") "" else it },
                 phoneNumber1 = backStackEntry.arguments?.getString("phoneNumber1") ?: "",
-                phoneNumber2 = backStackEntry.arguments?.getString("phoneNumber2") ?: "",
+                phoneNumber2 = (backStackEntry.arguments?.getString("phoneNumber2") ?: "").let { if (it == "none") "" else it },
                 navController= navController
             )
         }
