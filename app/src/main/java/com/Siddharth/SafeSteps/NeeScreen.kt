@@ -365,27 +365,13 @@ fun NeeScreen(
                 isSosActive = activeSessionId != null,
                 onClick = {
                     if (activeSessionId == null) {
-                        coroutineScope.launch {
-                            try {
-                                // Trigger SOS API
-                                val response = RetrofitClient.apiService.startSession()
-                                ThreatLevelManager.setSessionId(response.session_id)
-                                com.Siddharth.SafeSteps.SosConversationState.clear() // fresh chat for this session
-                                
-                                // Start Audio Streaming & Location Service
-                                val audioIntent = Intent(context, com.Siddharth.SafeSteps.AudioStreamingService::class.java)
-                                audioIntent.putExtra("SESSION_ID", response.session_id)
-                                context.startService(audioIntent)
-
-                                // Start Location Service — it hosts the recurring 20-second
-                                // threat-aware SMS loop, so it MUST run for the feature to work.
-                                val locationIntent = Intent(context, com.Siddharth.SafeSteps.LocationService::class.java)
-                                context.startService(locationIntent)
-                                ThreatLevelManager.updateThreatLevel("LOW")
-                            } catch (e: Exception) {
-                                // Handle error
-                            }
-                        }
+                        // Make sure the contacts are populated even if the permission-gated
+                        // LaunchedEffect above hasn't run yet, then fire the full emergency
+                        // sequence (session + audio/location services + SMS + call). This is
+                        // the same entry point used by the Volume-Down hardware trigger.
+                        EmergencyHelper.contact1 = "$userCountryCode1$userPhone1"
+                        EmergencyHelper.contact2 = "$userCountryCode2$userPhone2"
+                        EmergencyHelper.sendSmsAndCall(context)
                     }
                 }
             )

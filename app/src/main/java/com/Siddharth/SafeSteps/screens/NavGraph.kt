@@ -69,13 +69,16 @@ fun NavGraph(modifier: Modifier = Modifier) {
         }
 
         composable(
-            route = "NeeScreen/{name}/{countryCode1}/{countryCode2}/{phoneNumber1}/{phoneNumber2}",
+            // Optional values (e.g. a blank secondary contact) are passed as query
+            // parameters so an empty value never produces an unmatched path segment,
+            // which previously crashed navigation with IllegalArgumentException.
+            route = Routes.NEE_SCREEN,
             arguments = listOf(
-                navArgument("name") { type = NavType.StringType },
-                navArgument("countryCode1") { type = NavType.StringType },
-                navArgument("countryCode2") { type = NavType.StringType },
-                navArgument("phoneNumber1") { type = NavType.StringType },
-                navArgument("phoneNumber2") { type = NavType.StringType }
+                navArgument("name") { type = NavType.StringType; nullable = true; defaultValue = "" },
+                navArgument("countryCode1") { type = NavType.StringType; nullable = true; defaultValue = "" },
+                navArgument("countryCode2") { type = NavType.StringType; nullable = true; defaultValue = "" },
+                navArgument("phoneNumber1") { type = NavType.StringType; nullable = true; defaultValue = "" },
+                navArgument("phoneNumber2") { type = NavType.StringType; nullable = true; defaultValue = "" }
             )
         ) { backStackEntry ->
             NeeScreen(

@@ -1,6 +1,5 @@
 package com.Siddharth.SafeSteps.screens
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -206,7 +205,15 @@ private fun completeSetup(
             preferencesHelper.setAppSetupDone(true) // Mark completely done
             
             val finalData = preferencesHelper.getUserData()
-            navController.navigate("NeeScreen/${Uri.encode(finalData?.name)}/${Uri.encode(finalData?.countryCode1)}/${Uri.encode(finalData?.countryCode2)}/${Uri.encode(finalData?.phone1)}/${Uri.encode(finalData?.phone2)}") {
+            navController.navigate(
+                neeScreenRoute(
+                    name = finalData?.name,
+                    countryCode1 = finalData?.countryCode1,
+                    countryCode2 = finalData?.countryCode2,
+                    phoneNumber1 = finalData?.phone1,
+                    phoneNumber2 = finalData?.phone2
+                )
+            ) {
                 popUpTo(0) { inclusive = true }
             }
         }

@@ -122,7 +122,10 @@ class LocationService : Service(), KoinComponent {
                             val c1 = EmergencyHelper.contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())
                             val c2 = EmergencyHelper.contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())
 
-                            if (c1.isNotEmpty() && c2.isNotEmpty()) {
+                            // Primary contact is required; the secondary is optional. A
+                            // country-code-only value (e.g. "+91") has too few digits to dial.
+                            fun isDialable(n: String) = n.count { it.isDigit() } >= 7
+                            if (isDialable(c1)) {
                                 val mapsUrl = "https://maps.google.com/?q=${location.latitude},${location.longitude}"
 
                                 // If the AI flagged an elevated threat, send the situation-aware message
@@ -142,7 +145,9 @@ class LocationService : Service(), KoinComponent {
 
                                 val smsManager = android.telephony.SmsManager.getDefault()
                                 smsManager.sendTextMessage(c1, null, msg, null, null)
-                                smsManager.sendTextMessage(c2, null, msg, null, null)
+                                if (isDialable(c2)) {
+                                    smsManager.sendTextMessage(c2, null, msg, null, null)
+                                }
                                 android.util.Log.d(
                                     "LocationService",
                                     "Sent 20s SMS update (level=${com.Siddharth.SafeSteps.ThreatLevelManager.currentLevel}, " +

@@ -17,14 +17,19 @@ object EmergencyHelper {
     var contact1: String? = null
     var contact2: String? = null
 
+    // A value like "+91" (country code only, blank optional contact) has too few digits
+    // to dial/SMS. Require a real number before we try to use it.
+    private fun isDialable(number: String): Boolean = number.count { it.isDigit() } >= 7
+
     fun sendSmsAndCall(context: Context) {
         val user = PreferencesHelper(context).getUserData()
-        
+
         val c1 = contact1 ?: (user?.countryCode1.orEmpty() + user?.phone1.orEmpty())
         val c2 = contact2 ?: (user?.countryCode2.orEmpty() + user?.phone2.orEmpty())
-        
-        if (user == null || c1.isEmpty() || c2.isEmpty()) {
-            Toast.makeText(context, "User data or contacts not available", Toast.LENGTH_SHORT).show()
+
+        // Only the primary contact is required; the secondary is optional.
+        if (user == null || !isDialable(c1)) {
+            Toast.makeText(context, "Primary emergency contact not set", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -76,7 +81,9 @@ object EmergencyHelper {
                 // 5. Send SMS Local Fallback
                 val smsManager = SmsManager.getDefault()
                 smsManager.sendTextMessage(c1, null, message, null, null)
-                smsManager.sendTextMessage(c2, null, message, null, null)
+                if (isDialable(c2)) {
+                    smsManager.sendTextMessage(c2, null, message, null, null)
+                }
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Emergency SOS Active & SMS sent", Toast.LENGTH_SHORT).show()
                 }

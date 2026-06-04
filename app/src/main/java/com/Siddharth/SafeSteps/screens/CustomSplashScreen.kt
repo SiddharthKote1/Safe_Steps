@@ -1,6 +1,5 @@
 package com.Siddharth.SafeSteps.screens
 
-import android.net.Uri
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,7 +54,13 @@ fun CustomSplashScreen(navController: NavController) {
             !preferencesHelper.isAppSetupDone() -> Routes.PERMISSION_SCREEN
             !isUserDataComplete -> Routes.SETUP_CONTACTS
             else -> {
-                "NeeScreen/${Uri.encode(user!!.name)}/${Uri.encode(user.countryCode1)}/${Uri.encode(user.countryCode2)}/${Uri.encode(user.phone1)}/${Uri.encode(user.phone2)}"
+                neeScreenRoute(
+                    name = user!!.name,
+                    countryCode1 = user.countryCode1,
+                    countryCode2 = user.countryCode2,
+                    phoneNumber1 = user.phone1,
+                    phoneNumber2 = user.phone2
+                )
             }
         }
 
