@@ -1,5 +1,6 @@
 package com.Siddharth.SafeSteps.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +23,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +41,7 @@ fun RegisterScreen(
     navController: NavController,
     authViewModel: AuthViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
     var phone by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -150,8 +153,17 @@ fun RegisterScreen(
                             medical_notes = "None",
                             preferred_language = "en"
                         )
-                        authViewModel.register(request)
-                        navController.navigate(Routes.PERMISSION_SCREEN)
+                        authViewModel.register(request) { success, error ->
+                            if (success) {
+                                navController.navigate(Routes.PERMISSION_SCREEN)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Registration failed: ${error ?: "please try again"}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     }
                 },
                 modifier = Modifier

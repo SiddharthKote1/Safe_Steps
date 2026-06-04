@@ -8,9 +8,10 @@ import kotlinx.coroutines.*
 
 class VolumeButtonAccessibilityService : AccessibilityService() {
 
+    private var volumeUpPressed = false
     private var volumeDownPressed = false
     private var checkJob: Job? = null
-    private val triggerDuration = 3000L // 3 seconds long press
+    private val triggerDuration = 5000L // hold BOTH volume buttons for 5 seconds
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         // Not used
@@ -22,35 +23,44 @@ class VolumeButtonAccessibilityService : AccessibilityService() {
     override fun onKeyEvent(event: KeyEvent): Boolean {
         Log.d("VolumeButtonService", "Key event: ${event.keyCode}, Action: ${event.action}")
 
-        return when (event.keyCode) {
-            KeyEvent.KEYCODE_VOLUME_DOWN -> handleVolumeKey(event)
-            else -> super.onKeyEvent(event)
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> when (event.action) {
+                KeyEvent.ACTION_DOWN -> volumeUpPressed = true
+                KeyEvent.ACTION_UP -> volumeUpPressed = false
+            }
+
+            KeyEvent.KEYCODE_VOLUME_DOWN -> when (event.action) {
+                KeyEvent.ACTION_DOWN -> volumeDownPressed = true
+                KeyEvent.ACTION_UP -> volumeDownPressed = false
+            }
+
+            else -> return super.onKeyEvent(event)
         }
+
+        evaluateCombo()
+
+        // Consume the event only while BOTH buttons are held, so the system volume
+        // dialog stays hidden during the 5-second SOS gesture. A single button still
+        // adjusts the volume normally.
+        return volumeUpPressed && volumeDownPressed
     }
 
-    private fun handleVolumeKey(event: KeyEvent): Boolean {
-        when (event.action) {
-            KeyEvent.ACTION_DOWN -> {
-                volumeDownPressed = true
-
-                if (volumeDownPressed && checkJob == null) {
-                    checkJob = CoroutineScope(Dispatchers.Default).launch {
-                        delay(triggerDuration)
-                        if (volumeDownPressed) {
-                            triggerEmergencyAction()
-                        }
+    private fun evaluateCombo() {
+        if (volumeUpPressed && volumeDownPressed) {
+            // Both buttons are now held — start the 5s countdown once.
+            if (checkJob == null) {
+                checkJob = CoroutineScope(Dispatchers.Default).launch {
+                    delay(triggerDuration)
+                    if (volumeUpPressed && volumeDownPressed) {
+                        triggerEmergencyAction()
                     }
                 }
             }
-
-            KeyEvent.ACTION_UP -> {
-                volumeDownPressed = false
-                checkJob?.cancel()
-                checkJob = null
-            }
+        } else {
+            // A button was released before 5s elapsed — abort.
+            checkJob?.cancel()
+            checkJob = null
         }
-
-        return volumeDownPressed
     }
 
     private fun triggerEmergencyAction() {
